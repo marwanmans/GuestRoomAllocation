@@ -1,4 +1,5 @@
 @page
+@using GuestRoomAllocation.Web.Pages.Admin
 @model AdminIndexModel
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
@@ -102,7 +103,7 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="d-flex align-items-center justify-content-end" id="filterControls" style="display: none;">
+        <div class="d-flex align-items-center justify-content-end" id="filterControls">
             <input type="text" id="guestFilter" class="form-control w-auto me-2" placeholder="Filter by guest name...">
             <select id="apartmentFilter" class="form-select w-auto">
                 <option value="">All Apartments</option>
@@ -111,6 +112,9 @@
                     <option value="@apartment.Id">@apartment.Name</option>
                 }
             </select>
+            <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearFilters()" title="Clear Filters">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -164,6 +168,8 @@
                             <div class="allocation-block"
                                  title="@allocation.Guest.FullName - @allocation.Room.Apartment.Name (@allocation.Room.RoomNumber)"
                                  data-allocation-id="@allocation.Id"
+                                 data-guest-name="@allocation.Guest.FullName.ToLower()"
+                                 data-apartment-id="@allocation.Room.ApartmentId"
                                  onclick="editAllocation(event, @allocation.Id)">
                                 <i class="fas fa-user"></i> @allocation.Guest.FullName.Split(' ')[0]
                             </div>
@@ -173,6 +179,7 @@
                             <div class="maintenance-block"
                                  title="@maintenance.Description - @maintenance.Target"
                                  data-maintenance-id="@maintenance.Id"
+                                 data-apartment-id="@(maintenance.ApartmentId ?? maintenance.Room?.ApartmentId ?? 0)"
                                  onclick="editMaintenance(event, @maintenance.Id)">
                                 <i class="fas fa-tools"></i> @maintenance.Category
                             </div>
@@ -196,7 +203,7 @@
     <div class="row">
         @foreach (var apartment in Model.Apartments)
         {
-            <div class="col-md-6 col-lg-4 mb-4">
+            <div class="col-md-6 col-lg-4 mb-4 apartment-card" data-apartment-id="@apartment.Id">
                 <div class="card">
                     <div class="card-header">
                         <h6>@apartment.Name</h6>
@@ -208,12 +215,14 @@
                             var currentAllocation = Model.GetCurrentAllocation(room.Id);
                             var isInMaintenance = Model.IsRoomInMaintenance(room.Id);
 
-                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded
-                                @(isInMaintenance ? "bg-danger text-white" :
-                                  currentAllocation != null ? "bg-primary text-white" : "bg-light")">
-                                <span>
-                                    <strong>@room.RoomNumber</strong>
-                                    @if (room.HasPrivateBathroom)
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded room-block
+                                        @(isInMaintenance ? "bg-danger text-white" :
+                                                                   currentAllocation != null ? "bg-primary text-white" : "bg-light")"
+                         data-guest-name="@(currentAllocation?.Guest.FullName.ToLower() ?? "")"
+                         data-apartment-id="@apartment.Id">
+                        <span>
+                            <strong>@room.RoomNumber</strong>
+                            @if (room.HasPrivateBathroom)
                                     {
                                         <i class="fas fa-bath" title="Private Bathroom"></i>
                                     }
@@ -222,11 +231,11 @@
                                     @if (isInMaintenance)
                                     {
                                         <i class="fas fa-tools"></i>
-                                        @* Maintenance *@
+                                        <span class="maintenance-text">Maintenance</span>
                                     }
                                     else if (currentAllocation != null)
                                     {
-                                        @currentAllocation.Guest.FullName
+                                        <span class="guest-name">@currentAllocation.Guest.FullName</span>
                                     }
                                     else
                                     {
@@ -274,7 +283,6 @@
                                     @if (!string.IsNullOrEmpty(allocation.Guest.JobPosition))
                                     {
                                         <br>
-
                                         <small class="text-muted">@allocation.Guest.JobPosition</small>
                                     }
                                 </td>
@@ -319,7 +327,11 @@
 
 @section Scripts {
     <script>
+        let currentView = '@Model.ViewMode';
+
         function toggleView(view) {
+            currentView = view;
+
             // Hide all views
             document.getElementById('calendarView').style.display = 'none';
             document.getElementById('gridView').style.display = 'none';
@@ -334,13 +346,8 @@
             });
             event.target.classList.add('active');
 
-            // Show/hide filter controls for list view
-            const filterControls = document.getElementById('filterControls');
-            if (view === 'list') {
-                filterControls.style.display = 'flex';
-            } else {
-                filterControls.style.display = 'none';
-            }
+            // Apply current filters to the new view
+            applyFilters();
 
             // Update URL without refresh
             const url = new URL(window.location);
@@ -355,6 +362,126 @@
             url.searchParams.set('month', month);
             url.searchParams.set('year', year);
             window.location.href = url;
+        }
+
+        // Enhanced filtering function that works for all views
+        function applyFilters() {
+            const guestFilter = document.getElementById('guestFilter').value.toLowerCase().trim();
+            const apartmentFilter = document.getElementById('apartmentFilter').value;
+
+            if (currentView === 'calendar') {
+                filterCalendarView(guestFilter, apartmentFilter);
+            } else if (currentView === 'grid') {
+                filterGridView(guestFilter, apartmentFilter);
+            } else if (currentView === 'list') {
+                filterListView(guestFilter, apartmentFilter);
+            }
+        }
+
+        function filterCalendarView(guestFilter, apartmentFilter) {
+            const allocationBlocks = document.querySelectorAll('.allocation-block');
+            const maintenanceBlocks = document.querySelectorAll('.maintenance-block');
+
+            // Filter allocation blocks
+            allocationBlocks.forEach(block => {
+                const guestName = block.dataset.guestName || '';
+                const apartmentId = block.dataset.apartmentId || '';
+
+                const guestMatch = !guestFilter || guestName.includes(guestFilter);
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (guestMatch && apartmentMatch) {
+                    block.style.display = 'block';
+                    block.classList.remove('filtered-out');
+                } else {
+                    block.style.display = 'none';
+                    block.classList.add('filtered-out');
+                }
+            });
+
+            // Filter maintenance blocks (apartment filter only)
+            maintenanceBlocks.forEach(block => {
+                const apartmentId = block.dataset.apartmentId || '';
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (apartmentMatch) {
+                    block.style.display = 'block';
+                    block.classList.remove('filtered-out');
+                } else {
+                    block.style.display = 'none';
+                    block.classList.add('filtered-out');
+                }
+            });
+
+            // Update empty day hints visibility
+            updateCalendarEmptyHints();
+        }
+
+        function filterGridView(guestFilter, apartmentFilter) {
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+
+            apartmentCards.forEach(card => {
+                const apartmentId = card.dataset.apartmentId || '';
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (!apartmentMatch) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // Filter rooms within the apartment
+                const roomBlocks = card.querySelectorAll('.room-block');
+                let hasVisibleRooms = false;
+
+                roomBlocks.forEach(roomBlock => {
+                    const guestName = roomBlock.dataset.guestName || '';
+                    const guestMatch = !guestFilter || guestName.includes(guestFilter) || guestName === '';
+
+                    if (guestMatch) {
+                        roomBlock.style.display = 'flex';
+                        hasVisibleRooms = true;
+                    } else {
+                        roomBlock.style.display = 'none';
+                    }
+                });
+
+                // Show apartment card if it has visible rooms or no guest filter is applied
+                card.style.display = (hasVisibleRooms || !guestFilter) ? 'block' : 'none';
+            });
+        }
+
+        function filterListView(guestFilter, apartmentFilter) {
+            const rows = document.querySelectorAll('.allocation-row');
+
+            rows.forEach(row => {
+                const guestName = row.dataset.guest || '';
+                const apartmentId = row.dataset.apartment || '';
+
+                const guestMatch = !guestFilter || guestName.includes(guestFilter);
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                row.style.display = (guestMatch && apartmentMatch) ? '' : 'none';
+            });
+        }
+
+        function updateCalendarEmptyHints() {
+            const calendarCells = document.querySelectorAll('.calendar-cell.current-month');
+
+            calendarCells.forEach(cell => {
+                const visibleBlocks = cell.querySelectorAll('.allocation-block:not(.filtered-out), .maintenance-block:not(.filtered-out)');
+                const emptyHint = cell.querySelector('.empty-day-hint');
+
+                if (emptyHint) {
+                    // Show hint only if no visible blocks
+                    emptyHint.style.display = visibleBlocks.length === 0 ? 'block' : 'none';
+                }
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('guestFilter').value = '';
+            document.getElementById('apartmentFilter').value = '';
+            applyFilters();
         }
 
         // Calendar navigation functions
@@ -389,23 +516,6 @@
             window.location.href = url;
         }
 
-        // Keyboard navigation support
-        document.addEventListener('keydown', function(event) {
-            // Only handle keyboard navigation when calendar is visible
-            if (document.getElementById('calendarView').style.display !== 'none') {
-                if (event.key === 'ArrowLeft' && (event.ctrlKey || event.metaKey)) {
-                    event.preventDefault();
-                    navigateMonth(-1);
-                } else if (event.key === 'ArrowRight' && (event.ctrlKey || event.metaKey)) {
-                    event.preventDefault();
-                    navigateMonth(1);
-                } else if (event.key === 'Home' && (event.ctrlKey || event.metaKey)) {
-                    event.preventDefault();
-                    goToToday();
-                }
-            }
-        });
-
         // Calendar interaction functions
         function handleDayClick(event, dateString) {
             // If the click was on an allocation or maintenance block, don't handle day click
@@ -436,38 +546,17 @@
             window.location.href = `/Maintenance/Edit/${maintenanceId}`;
         }
 
-        // Filter functionality for list view
-        document.getElementById('guestFilter').addEventListener('input', function() {
-            filterTable();
-        });
-
-        document.getElementById('apartmentFilter').addEventListener('change', function() {
-            filterTable();
-        });
-
-        function filterTable() {
-            const guestFilter = document.getElementById('guestFilter').value.toLowerCase();
-            const apartmentFilter = document.getElementById('apartmentFilter').value;
-            const rows = document.querySelectorAll('.allocation-row');
-
-            rows.forEach(row => {
-                const guestName = row.dataset.guest;
-                const apartmentId = row.dataset.apartment;
-
-                const guestMatch = !guestFilter || guestName.includes(guestFilter);
-                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
-
-                row.style.display = guestMatch && apartmentMatch ? '' : 'none';
-            });
-        }
-
-        // Add visual feedback for interactive elements
+        // Event listeners for filters
         document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('guestFilter').addEventListener('input', applyFilters);
+            document.getElementById('apartmentFilter').addEventListener('change', applyFilters);
+
             // Add hover effects to calendar cells
             const calendarCells = document.querySelectorAll('.calendar-cell.current-month');
             calendarCells.forEach(cell => {
                 cell.addEventListener('mouseenter', function() {
-                    if (!this.querySelector('.allocation-block') && !this.querySelector('.maintenance-block')) {
+                    if (!this.querySelector('.allocation-block:not(.filtered-out)') &&
+                        !this.querySelector('.maintenance-block:not(.filtered-out)')) {
                         this.classList.add('calendar-cell-hover');
                     }
                 });
@@ -476,152 +565,26 @@
                     this.classList.remove('calendar-cell-hover');
                 });
             });
+
+            // Apply initial filters if any
+            applyFilters();
+        });
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(event) {
+            // Only handle keyboard navigation when calendar is visible
+            if (document.getElementById('calendarView').style.display === 'block') {
+                if (event.key === 'ArrowLeft' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(-1);
+                } else if (event.key === 'ArrowRight' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(1);
+                } else if (event.key === 'Home' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    goToToday();
+                }
+            }
         });
     </script>
-
-    <style>
-        /* Enhanced calendar styling for interactivity */
-        .calendar-cell {
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-            .calendar-cell.current-month {
-                cursor: pointer;
-            }
-
-                .calendar-cell.current-month:hover {
-                    background-color: #f8f9fa !important;
-                    border-color: #007bff !important;
-                    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
-                }
-
-            .calendar-cell.today {
-                border: 2px solid #007bff !important;
-                background-color: #e3f2fd !important;
-            }
-
-        .calendar-cell-hover {
-            background-color: #f8f9fa !important;
-            border-color: #007bff !important;
-        }
-
-        .allocation-block {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            z-index: 1;
-        }
-
-            .allocation-block:hover {
-                background-color: #0056b3 !important;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            }
-
-        .maintenance-block {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            z-index: 1;
-        }
-
-            .maintenance-block:hover {
-                background-color: #c82333 !important;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            }
-
-        .empty-day-hint {
-            display: none;
-            text-align: center;
-            padding: 10px 5px;
-            opacity: 0.7;
-        }
-
-        .calendar-cell.current-month:hover .empty-day-hint {
-            display: block;
-        }
-
-        .day-number {
-            pointer-events: none; /* Ensure day number doesn't interfere with clicks */
-        }
-
-        /* Calendar navigation styling */
-        .calendar-quick-nav .btn {
-            transition: all 0.2s ease;
-        }
-
-            .calendar-quick-nav .btn:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-
-        /* Navigation arrows styling */
-        .btn.btn-outline-secondary {
-            border-color: #dee2e6;
-            color: #6c757d;
-            transition: all 0.2s ease;
-        }
-
-            .btn.btn-outline-secondary:hover {
-                background-color: #f8f9fa;
-                border-color: #007bff;
-                color: #007bff;
-                transform: scale(1.05);
-            }
-
-            .btn.btn-outline-secondary:active {
-                transform: scale(0.98);
-            }
-
-        /* Responsive adjustments */
-        @@media (max-width: 768px) {
-            .allocation-block, .maintenance-block
-
-        {
-            font-size: 0.7em;
-            padding: 1px 3px;
-        }
-
-        .empty-day-hint {
-            font-size: 0.7em;
-            padding: 5px 2px;
-        }
-
-        .calendar-quick-nav {
-            margin-top: 10px;
-        }
-
-        .card-header .d-flex {
-            flex-direction: column;
-            align-items: flex-start !important;
-        }
-
-        .btn.btn-outline-secondary.btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        }
-
-        /* Keyboard navigation hint */
-        .calendar-keyboard-hint {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        .calendar-view:hover .calendar-keyboard-hint {
-            opacity: 1;
-        }
-    </style>
 }

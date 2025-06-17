@@ -2,18 +2,21 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using GuestRoomAllocation.Web.Data;
+using GuestRoomAllocation.Web.Models;
 
 namespace GuestRoomAllocation.Web.Pages
 {
     public class LoginModel : PageModel
     {
-        private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
 
-        public LoginModel(IConfiguration configuration)
+        public LoginModel(ApplicationDbContext context)
         {
-            _configuration = configuration;
+            _context = context;
         }
 
         [BindProperty]
@@ -43,34 +46,43 @@ namespace GuestRoomAllocation.Web.Pages
                 return Page();
             }
 
-            var adminUsername = _configuration["AdminCredentials:Username"];
-            var adminPassword = _configuration["AdminCredentials:Password"];
+            // Find user by username
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == Username && u.IsActive);
 
-            if (Username == adminUsername && Password == adminPassword)
+            if (user == null || !ApplicationDbContext.VerifyPassword(Password, user.PasswordHash))
             {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, Username),
-                    new Claim(ClaimTypes.Role, "Admin")
-                };
-
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var authProperties = new AuthenticationProperties
-                {
-                    IsPersistent = true,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-                };
-
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(claimsIdentity),
-                    authProperties);
-
-                return RedirectToPage("/Admin/Index");
+                ErrorMessage = "Invalid username or password.";
+                return Page();
             }
 
-            ErrorMessage = "Invalid username or password.";
-            return Page();
+            // Update last login date
+            user.LastLoginDate = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            // Create claims
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("FullName", user.FullName),
+                new Claim("UserId", user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            return RedirectToPage("/Admin/Index");
         }
     }
 }

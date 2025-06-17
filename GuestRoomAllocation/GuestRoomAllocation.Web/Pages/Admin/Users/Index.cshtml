@@ -1,0 +1,302 @@
+﻿<!-- Pages/Admin/Users/Index.cshtml -->
+@page
+@using GuestRoomAllocation.Web.Pages.Admin.Users
+@model UsersIndexModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "AdminOnly")]
+@{
+    ViewData["Title"] = "User Management";
+}
+
+@section HeaderActions {
+    <a href="/Admin/Users/Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New User
+    </a>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Access</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>@user.FullName</strong>
+                                    <br>
+                                    <small class="text-muted">@user.Email</small>
+                                </div>
+                            </td>
+                            <td>@user.Username</td>
+                            <td>
+                                <span class="badge @(user.Role == UserRole.Admin ? "bg-danger" : "bg-primary")">
+                                    @user.Role
+                                </span>
+                            </td>
+                            <td>
+                                @if (user.Role == UserRole.Admin)
+                                {
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle"></i> Full Access
+                                    </span>
+                                }
+                                else
+                                {
+                                    <div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-building"></i> @user.ApartmentAccess.Count apartment(s)
+                                            <br>
+                                            <i class="fas fa-users"></i> @user.GuestAccess.Count guest(s)
+                                        </small>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                @if (user.LastLoginDate.HasValue)
+                                {
+                                    @user.LastLoginDate.Value.ToString("MMM dd, yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Never</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="/Admin/Users/Edit/@user.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    @if (user.Role != UserRole.Admin)
+                                    {
+                                        <a href="/Admin/Users/Delete/@user.Id" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pages/Admin/Users/Create.cshtml -->
+@page
+@using GuestRoomAllocation.Web.Pages.Admin.Users
+@model CreateUserModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "AdminOnly")]
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Create New User</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.FirstName" class="form-label">First Name *</label>
+                                <input asp-for="UserModel.FirstName" class="form-control" required />
+                                <span asp-validation-for="UserModel.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.LastName" class="form-label">Last Name *</label>
+                                <input asp-for="UserModel.LastName" class="form-control" required />
+                                <span asp-validation-for="UserModel.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.Username" class="form-label">Username *</label>
+                                <input asp-for="UserModel.Username" class="form-control" required />
+                                <span asp-validation-for="UserModel.Username" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.Email" class="form-label">Email *</label>
+                                <input asp-for="UserModel.Email" type="email" class="form-control" required />
+                                <span asp-validation-for="UserModel.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.Password" class="form-label">Password *</label>
+                                <input asp-for="UserModel.Password" type="password" class="form-control" required />
+                                <span asp-validation-for="UserModel.Password" class="text-danger"></span>
+                                <small class="form-text text-muted">Minimum 6 characters</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UserModel.Role" class="form-label">Role *</label>
+                                <select asp-for="UserModel.Role" class="form-select" required onchange="toggleAccessControls()">
+                                    <option value="@((int)UserRole.PropertyManager)">Property Manager</option>
+                                    <option value="@((int)UserRole.Admin)">Administrator</option>
+                                </select>
+                                <span asp-validation-for="UserModel.Role" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="UserModel.Notes" class="form-label">Notes</label>
+                        <textarea asp-for="UserModel.Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="UserModel.Notes" class="text-danger"></span>
+                    </div>
+
+                    <!-- Access Controls (hidden for Admin role) -->
+                    <div id="accessControls">
+                        <h6>Access Permissions</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Apartment Access</label>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                        @foreach (var apartment in Model.Apartments)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="UserModel.SelectedApartmentIds" 
+                                                       value="@apartment.Id" 
+                                                       id="apartment_@apartment.Id" />
+                                                <label class="form-check-label" for="apartment_@apartment.Id">
+                                                    @apartment.Name
+                                                    <small class="text-muted">(@apartment.Rooms.Count rooms)</small>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Guest Access</label>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                        @foreach (var guest in Model.Guests)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="UserModel.SelectedGuestIds" 
+                                                       value="@guest.Id" 
+                                                       id="guest_@guest.Id" />
+                                                <label class="form-check-label" for="guest_@guest.Id">
+                                                    @guest.FullName
+                                                    @if (!string.IsNullOrEmpty(guest.JobPosition))
+                                                    {
+                                                        <small class="text-muted">- @guest.JobPosition</small>
+                                                    }
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/Admin/Users" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Users
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> User Roles</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><span class="badge bg-danger">Administrator</span></h6>
+                    <p><small>Full access to all features, apartments, and guests. Can manage other users.</small></p>
+                </div>
+                <div class="mb-3">
+                    <h6><span class="badge bg-primary">Property Manager</span></h6>
+                    <p><small>Limited access to assigned apartments and guests only. Cannot manage users.</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-shield-alt"></i> Security Notes</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Passwords are encrypted and cannot be viewed</li>
+                    <li>Users can only access their assigned apartments and guests</li>
+                    <li>Access permissions can be modified after creation</li>
+                    <li>Inactive users cannot log in</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleAccessControls() {
+            const role = document.querySelector('select[name="UserModel.Role"]').value;
+            const accessControls = document.getElementById('accessControls');
+            
+            if (role == '@((int)UserRole.Admin)') {
+                accessControls.style.display = 'none';
+            } else {
+                accessControls.style.display = 'block';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleAccessControls();
+        });
+    </script>
+}

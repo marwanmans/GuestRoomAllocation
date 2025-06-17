@@ -1,59 +1,40 @@
 ﻿@page
-@model MaintenanceIndexModel
+@using GuestRoomAllocation.Web.Pages.Admin
+@model AdminIndexModel
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @{
-    ViewData["Title"] = "Maintenance Management";
+    ViewData["Title"] = "Dashboard";
 }
 
 @section HeaderActions {
-    <div class="btn-group me-2">
-        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "active" ? "active" : "")"
-                onclick="toggleView('active')">
-            <i class="fas fa-tools"></i> Active
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "calendar" ? "active" : "")"
+                onclick="toggleView('calendar')">
+            <i class="fas fa-calendar"></i> Calendar
         </button>
-        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "scheduled" ? "active" : "")"
-                onclick="toggleView('scheduled')">
-            <i class="fas fa-calendar-alt"></i> Scheduled
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "grid" ? "active" : "")"
+                onclick="toggleView('grid')">
+            <i class="fas fa-th"></i> Grid
         </button>
-        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "completed" ? "active" : "")"
-                onclick="toggleView('completed')">
-            <i class="fas fa-check-circle"></i> Completed
-        </button>
-        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "all" ? "active" : "")"
-                onclick="toggleView('all')">
-            <i class="fas fa-list"></i> All
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "list" ? "active" : "")"
+                onclick="toggleView('list')">
+            <i class="fas fa-list"></i> List
         </button>
     </div>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createMaintenanceModal">
-        <i class="fas fa-plus"></i> Schedule Maintenance
-    </button>
 }
 
-<!-- Statistics Cards -->
+<!-- Quick Stats -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card text-white bg-danger">
+        <div class="card text-white bg-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4>@Model.ActiveCount</h4>
-                        <p>Active Now</p>
+                        <h4>@Model.TotalGuests</h4>
+                        <p>Total Guests</p>
                     </div>
-                    <i class="fas fa-tools fa-2x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>@Model.ScheduledCount</h4>
-                        <p>Scheduled</p>
-                    </div>
-                    <i class="fas fa-calendar-alt fa-2x"></i>
+                    <i class="fas fa-users fa-2x"></i>
                 </div>
             </div>
         </div>
@@ -63,457 +44,670 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4>@Model.CompletedThisMonth</h4>
-                        <p>This Month</p>
-                    </div>
-                    <i class="fas fa-check-circle fa-2x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4>@Model.RoomsInMaintenance</h4>
-                        <p>Rooms Affected</p>
+                        <h4>@Model.OccupiedRooms</h4>
+                        <p>Occupied Rooms</p>
                     </div>
                     <i class="fas fa-bed fa-2x"></i>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Filter Controls -->
-<div class="row mb-3">
     <div class="col-md-3">
-        <select id="apartmentFilter" class="form-select">
-            <option value="">All Apartments</option>
-            @foreach (var apartment in Model.Apartments)
-            {
-                <option value="@apartment.Id">@apartment.Name</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select id="categoryFilter" class="form-select">
-            <option value="">All Categories</option>
-            @foreach (var category in Enum.GetValues<MaintenanceCategory>())
-            {
-                <option value="@((int)category)">@category</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
-        <input type="text" id="searchFilter" class="form-control" placeholder="Search description...">
-    </div>
-    <div class="col-md-3">
-        <select id="priorityFilter" class="form-select">
-            <option value="">All Priorities</option>
-            <option value="urgent">Urgent (Today)</option>
-            <option value="soon">Due Soon (This Week)</option>
-            <option value="overdue">Overdue</option>
-        </select>
-    </div>
-</div>
-
-<!-- Maintenance List -->
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Location</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Period</th>
-                        <th>Duration</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="maintenanceTableBody">
-                    @foreach (var maintenance in Model.MaintenancePeriods)
-                    {
-                        var status = Model.GetMaintenanceStatus(maintenance);
-                        var statusClass = status switch
-                        {
-                            "active" => "danger",
-                            "scheduled" => "warning",
-                            "overdue" => "dark",
-                            "completed" => "success",
-                            _ => "secondary"
-                        };
-                        var priority = Model.GetMaintenancePriority(maintenance);
-
-                        <tr class="maintenance-row"
-                            data-apartment="@(maintenance.ApartmentId ?? maintenance.Room?.ApartmentId ?? 0)"
-                            data-category="@((int)maintenance.Category)"
-                            data-description="@maintenance.Description.ToLower()"
-                            data-status="@status"
-                            data-priority="@priority">
-                            <td>
-                                @if (maintenance.ApartmentId.HasValue)
-                                {
-                                    <strong>@maintenance.Apartment?.Name</strong>
-                                    <br>
-
-                                    <small class="text-muted">Entire Apartment</small>
-                                }
-                                else
-                                {
-                                    <strong>@maintenance.Room?.Apartment?.Name</strong>
-                                    <br>
-
-                                    <small class="text-muted">Room @maintenance.Room?.RoomNumber</small>
-                                }
-                            </td>
-                            <td>
-                                <span class="badge bg-@GetCategoryColor(maintenance.Category)">
-                                    @maintenance.Category
-                                </span>
-                                @if (priority == "urgent")
-                                {
-                                    <br>
-
-                                    <span class="badge bg-danger">URGENT</span>
-                                }
-                                else if (priority == "overdue")
-                                {
-                                    <br>
-
-                                    <span class="badge bg-dark">OVERDUE</span>
-                                }
-                                else if (priority == "soon")
-                                {
-                                    <br>
-
-                                    <span class="badge bg-warning">SOON</span>
-                                }
-                            </td>
-                            <td>
-                                <strong>@maintenance.Description</strong>
-                                @if (!string.IsNullOrEmpty(maintenance.Notes))
-                                {
-                                    <br>
-
-                                    <small class="text-muted">@maintenance.Notes</small>
-                                }
-                            </td>
-                            <td>
-                                <div>
-                                    <strong>Start:</strong> @maintenance.StartDate.ToString("MMM dd, yyyy")
-                                    <br><strong>End:</strong> @maintenance.EndDate.ToString("MMM dd, yyyy")
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-info">@maintenance.Duration day@(maintenance.Duration > 1 ? "s" : "")</span>
-                            </td>
-                            <td>
-                                <span class="badge bg-@statusClass">@status.ToUpper()</span>
-                                @if (status == "active")
-                                {
-                                    var remainingDays = (maintenance.EndDate - DateTime.Today).Days;
-                                    <br>
-
-                                    <small class="text-muted">
-                                        @if (remainingDays > 0)
-                                        {
-                                            @($"{remainingDays} day{(remainingDays > 1 ? "s" : "")} remaining")
-                                        }
-                                        else if (remainingDays == 0)
-                                        {
-                                            @("Ends today")
-                                        }
-                                        else
-                                        {
-                                            @($"Overdue by {Math.Abs(remainingDays)} day{(Math.Abs(remainingDays) > 1 ? "s" : "")}")
-                                        }
-                                    </small>
-                                }
-                                else if (status == "scheduled")
-                                {
-                                    var daysToStart = (maintenance.StartDate - DateTime.Today).Days;
-                                    <br>
-
-                                    <small class="text-muted">
-                                        @if (daysToStart == 0)
-                                        {
-                                            @("Starts today")
-                                        }
-                                        else if (daysToStart > 0)
-                                        {
-                                            @($"Starts in {daysToStart} day{(daysToStart > 1 ? "s" : "")}")
-                                        }
-                                    </small>
-                                }
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a href="/Maintenance/Edit/@maintenance.Id" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    @if (status != "completed")
-                                    {
-                                        <form method="post" asp-page-handler="Complete" class="d-inline">
-                                            <input type="hidden" name="id" value="@maintenance.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-success"
-                                                    onclick="return confirm('Mark @maintenance.Description as completed?')">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                    <a href="/Maintenance/Delete/@maintenance.Id" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.AvailableRooms</h4>
+                        <p>Available Rooms</p>
+                    </div>
+                    <i class="fas fa-door-open fa-2x"></i>
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.MaintenanceCount</h4>
+                        <p>In Maintenance</p>
+                    </div>
+                    <i class="fas fa-tools fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        @if (!Model.MaintenancePeriods.Any())
+<!-- View Controls -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="d-flex align-items-center">
+            <label for="monthSelect" class="form-label me-2">Month:</label>
+            <select id="monthSelect" class="form-select w-auto" onchange="changeMonth()">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i" selected="@(i == Model.CurrentMonth)">
+                        @(new DateTime(2024, i, 1).ToString("MMMM"))
+                    </option>
+                }
+            </select>
+            <label for="yearSelect" class="form-label ms-3 me-2">Year:</label>
+            <select id="yearSelect" class="form-select w-auto" onchange="changeMonth()">
+                @for (int year = DateTime.Now.Year - 1; year <= DateTime.Now.Year + 2; year++)
+                {
+                    <option value="@year" selected="@(year == Model.CurrentYear)">@year</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex align-items-center justify-content-end" id="filterControls">
+            <input type="text" id="guestFilter" class="form-control w-auto me-2" placeholder="Filter by guest name...">
+            <select id="apartmentFilter" class="form-select w-auto">
+                <option value="">All Apartments</option>
+                @foreach (var apartment in Model.Apartments)
+                {
+                    <option value="@apartment.Id">@apartment.Name</option>
+                }
+            </select>
+            <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearFilters()" title="Clear Filters">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar View -->
+<div id="calendarView" style="display: @(Model.ViewMode == "calendar" ? "block" : "none")">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="navigateMonth(-1)" title="Previous Month">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="calendarTitle">@Model.CurrentMonthName @Model.CurrentYear</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="navigateMonth(1)" title="Next Month">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </h5>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Click on any day to add a new allocation, or click on existing allocations to edit them
+                    </small>
+                </div>
+                <div class="calendar-quick-nav">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="goToToday()" title="Go to Today">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="calendar-grid">
+                <!-- Calendar Headers -->
+                <div class="text-center fw-bold p-2 bg-light">Sun</div>
+                <div class="text-center fw-bold p-2 bg-light">Mon</div>
+                <div class="text-center fw-bold p-2 bg-light">Tue</div>
+                <div class="text-center fw-bold p-2 bg-light">Wed</div>
+                <div class="text-center fw-bold p-2 bg-light">Thu</div>
+                <div class="text-center fw-bold p-2 bg-light">Fri</div>
+                <div class="text-center fw-bold p-2 bg-light">Sat</div>
+
+                @foreach (var day in Model.CalendarDays)
+                {
+                    <div class="calendar-cell @(day.IsCurrentMonth ? "current-month" : "text-muted bg-light") @(day.Date.Date == DateTime.Today ? "today" : "")"
+                         data-date="@day.Date.ToString("yyyy-MM-dd")"
+                         onclick="handleDayClick(event, '@day.Date.ToString("yyyy-MM-dd")')">
+                        <div class="fw-bold day-number">@day.Day</div>
+                        @foreach (var allocation in day.Allocations)
+                        {
+                            <div class="allocation-block"
+                                 title="@allocation.Guest.FullName - @allocation.Room.Apartment.Name (@allocation.Room.RoomNumber)"
+                                 data-allocation-id="@allocation.Id"
+                                 data-guest-name="@allocation.Guest.FullName.ToLower()"
+                                 data-apartment-id="@allocation.Room.ApartmentId"
+                                 onclick="editAllocation(event, @allocation.Id)">
+                                <i class="fas fa-user"></i> @allocation.Guest.FullName.Split(' ')[0]
+                            </div>
+                        }
+                        @foreach (var maintenance in day.MaintenancePeriods)
+                        {
+                            <div class="maintenance-block"
+                                 title="@maintenance.Description - @maintenance.Target"
+                                 data-maintenance-id="@maintenance.Id"
+                                 data-apartment-id="@(maintenance.ApartmentId ?? maintenance.Room?.ApartmentId ?? 0)"
+                                 onclick="editMaintenance(event, @maintenance.Id)">
+                                <i class="fas fa-tools"></i> @maintenance.Category
+                            </div>
+                        }
+                        @if (!day.Allocations.Any() && !day.MaintenancePeriods.Any() && day.IsCurrentMonth)
+                        {
+                            <div class="empty-day-hint">
+                                <i class="fas fa-plus text-muted"></i>
+                                <small class="text-muted">Click to add</small>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grid View -->
+<div id="gridView" style="display: @(Model.ViewMode == "grid" ? "block" : "none")">
+    <div class="row">
+        @foreach (var apartment in Model.Apartments)
         {
-            <div class="text-center py-5">
-                <i class="fas fa-tools fa-3x text-muted mb-3"></i>
-                <h4>No Maintenance Periods</h4>
-                <p class="text-muted">No maintenance periods match your current filter criteria.</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createMaintenanceModal">
-                    <i class="fas fa-plus"></i> Schedule First Maintenance
-                </button>
+            <div class="col-md-6 col-lg-4 mb-4 apartment-card" data-apartment-id="@apartment.Id">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>@apartment.Name</h6>
+                        <small class="text-muted">@apartment.Address</small>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var room in apartment.Rooms)
+                        {
+                            var currentAllocation = Model.GetCurrentAllocation(room.Id);
+                            var isInMaintenance = Model.IsRoomInMaintenance(room.Id);
+
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded room-block
+                                        @(isInMaintenance ? "bg-danger text-white" :
+                                                                   currentAllocation != null ? "bg-primary text-white" : "bg-light")"
+                         data-guest-name="@(currentAllocation?.Guest.FullName.ToLower() ?? "")"
+                         data-apartment-id="@apartment.Id">
+                        <span>
+                            <strong>@room.RoomNumber</strong>
+                            @if (room.HasPrivateBathroom)
+                                    {
+                                        <i class="fas fa-bath" title="Private Bathroom"></i>
+                                    }
+                                </span>
+                                <span>
+                                    @if (isInMaintenance)
+                                    {
+                                        <i class="fas fa-tools"></i>
+                                        <span class="maintenance-text">Maintenance</span>
+                                    }
+                                    else if (currentAllocation != null)
+                                    {
+                                        <span class="guest-name">@currentAllocation.Guest.FullName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">Available</span>
+                                    }
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         }
     </div>
 </div>
 
-<!-- Create Maintenance Modal -->
-<div class="modal fade" id="createMaintenanceModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Schedule New Maintenance</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- List View -->
+<div id="listView" style="display: @(Model.ViewMode == "list" ? "block" : "none")">
+    <div class="card">
+        <div class="card-header">
+            <h5>Current Allocations</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Guest</th>
+                            <th>Apartment</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Duration</th>
+                            <th>Bathroom</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allocationTableBody">
+                        @foreach (var allocation in Model.CurrentAllocations)
+                        {
+                            <tr class="allocation-row"
+                                data-guest="@allocation.Guest.FullName.ToLower()"
+                                data-apartment="@allocation.Room.ApartmentId">
+                                <td>
+                                    <strong>@allocation.Guest.FullName</strong>
+                                    @if (!string.IsNullOrEmpty(allocation.Guest.JobPosition))
+                                    {
+                                        <br>
+                                        <small class="text-muted">@allocation.Guest.JobPosition</small>
+                                    }
+                                </td>
+                                <td>@allocation.Room.Apartment.Name</td>
+                                <td>
+                                    @allocation.Room.RoomNumber
+                                    @if (allocation.Room.HasPrivateBathroom)
+                                    {
+                                        <i class="fas fa-bath text-info" title="Private Bathroom"></i>
+                                    }
+                                </td>
+                                <td>@allocation.CheckInDate.ToString("MMM dd, yyyy")</td>
+                                <td>@allocation.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                                <td>@allocation.Duration days</td>
+                                <td>
+                                    @if (allocation.BathroomPreferenceOverride)
+                                    {
+                                        <span class="badge bg-warning">Override</span>
+                                    }
+                                    else if (allocation.Room.HasPrivateBathroom)
+                                    {
+                                        <span class="badge bg-success">Private</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Shared</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="/Allocations/Edit/@allocation.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-            <form method="post" asp-page-handler="Create">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Location Type *</label>
-                                <select name="LocationType" class="form-select" required onchange="toggleLocationOptions()">
-                                    <option value="">Select Location Type</option>
-                                    <option value="apartment">Entire Apartment</option>
-                                    <option value="room">Specific Room</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Category *</label>
-                                <select name="Category" class="form-select" required>
-                                    <option value="">Select Category</option>
-                                    @foreach (var category in Enum.GetValues<MaintenanceCategory>())
-                                    {
-                                        <option value="@((int)category)">@category</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6" id="apartmentSelection" style="display: none;">
-                            <div class="mb-3">
-                                <label class="form-label">Apartment</label>
-                                <select name="ApartmentId" class="form-select">
-                                    <option value="">Select Apartment</option>
-                                    @foreach (var apartment in Model.Apartments)
-                                    {
-                                        <option value="@apartment.Id">@apartment.Name</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6" id="roomSelection" style="display: none;">
-                            <div class="mb-3">
-                                <label class="form-label">Room</label>
-                                <select name="RoomId" class="form-select">
-                                    <option value="">Select Room</option>
-                                    @foreach (var apartment in Model.Apartments)
-                                    {
-                                        <optgroup label="@apartment.Name">
-                                            @foreach (var room in apartment.Rooms)
-                                            {
-                                                <option value="@room.Id">@room.RoomNumber</option>
-                                            }
-                                        </optgroup>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Start Date *</label>
-                                <input type="date" name="StartDate" class="form-control" required
-                                       value="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">End Date *</label>
-                                <input type="date" name="EndDate" class="form-control" required
-                                       value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Description *</label>
-                        <input type="text" name="Description" class="form-control" required
-                               placeholder="Brief description of maintenance work" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea name="Notes" class="form-control" rows="3"
-                                  placeholder="Additional details, contractor info, special instructions..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Schedule Maintenance</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
+        let currentView = '@Model.ViewMode';
+
         function toggleView(view) {
-            // Update active button
+            currentView = view;
+
+            // Hide all views
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('gridView').style.display = 'none';
+            document.getElementById('listView').style.display = 'none';
+
+            // Show selected view
+            document.getElementById(view + 'View').style.display = 'block';
+
+            // Update buttons
             document.querySelectorAll('.btn-group .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
 
-            // Filter rows
-            filterMaintenance();
+            // Apply current filters to the new view
+            applyFilters();
 
-            // Update URL
+            // Update URL without refresh
             const url = new URL(window.location);
             url.searchParams.set('view', view);
             window.history.replaceState({}, '', url);
         }
 
-        function filterMaintenance() {
-            const viewMode = document.querySelector('.btn-group .btn.active').textContent.trim().toLowerCase();
-            const apartmentFilter = document.getElementById('apartmentFilter').value;
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            const priorityFilter = document.getElementById('priorityFilter').value;
-
-            const rows = document.querySelectorAll('.maintenance-row');
-
-            rows.forEach(row => {
-                const status = row.dataset.status;
-                const apartment = row.dataset.apartment;
-                const category = row.dataset.category;
-                const description = row.dataset.description;
-                const priority = row.dataset.priority;
-
-                let show = true;
-
-                // View mode filter
-                if (viewMode !== 'all') {
-                    show = show && status === viewMode;
-                }
-
-                // Apartment filter
-                if (apartmentFilter) {
-                    show = show && apartment === apartmentFilter;
-                }
-
-                // Category filter
-                if (categoryFilter) {
-                    show = show && category === categoryFilter;
-                }
-
-                // Search filter
-                if (searchFilter) {
-                    show = show && description.includes(searchFilter);
-                }
-
-                // Priority filter
-                if (priorityFilter) {
-                    show = show && priority === priorityFilter;
-                }
-
-                row.style.display = show ? '' : 'none';
-            });
+        function changeMonth() {
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const url = new URL(window.location);
+            url.searchParams.set('month', month);
+            url.searchParams.set('year', year);
+            window.location.href = url;
         }
 
-        function toggleLocationOptions() {
-            const locationType = document.querySelector('select[name="LocationType"]').value;
-            const apartmentDiv = document.getElementById('apartmentSelection');
-            const roomDiv = document.getElementById('roomSelection');
+        // Enhanced filtering function that works for all views
+        function applyFilters() {
+            const guestFilter = document.getElementById('guestFilter').value.toLowerCase().trim();
+            const apartmentFilter = document.getElementById('apartmentFilter').value;
 
-            if (locationType === 'apartment') {
-                apartmentDiv.style.display = 'block';
-                roomDiv.style.display = 'none';
-                document.querySelector('select[name="RoomId"]').value = '';
-            } else if (locationType === 'room') {
-                apartmentDiv.style.display = 'none';
-                roomDiv.style.display = 'block';
-                document.querySelector('select[name="ApartmentId"]').value = '';
-            } else {
-                apartmentDiv.style.display = 'none';
-                roomDiv.style.display = 'none';
+            if (currentView === 'calendar') {
+                filterCalendarView(guestFilter, apartmentFilter);
+            } else if (currentView === 'grid') {
+                filterGridView(guestFilter, apartmentFilter);
+            } else if (currentView === 'list') {
+                filterListView(guestFilter, apartmentFilter);
             }
         }
 
-        // Event listeners
-        document.getElementById('apartmentFilter').addEventListener('change', filterMaintenance);
-        document.getElementById('categoryFilter').addEventListener('change', filterMaintenance);
-        document.getElementById('searchFilter').addEventListener('input', filterMaintenance);
-        document.getElementById('priorityFilter').addEventListener('change', filterMaintenance);
+        function filterCalendarView(guestFilter, apartmentFilter) {
+            const allocationBlocks = document.querySelectorAll('.allocation-block');
+            const maintenanceBlocks = document.querySelectorAll('.maintenance-block');
 
-        // Initialize view
+            // Filter allocation blocks
+            allocationBlocks.forEach(block => {
+                const guestName = block.dataset.guestName || '';
+                const apartmentId = block.dataset.apartmentId || '';
+
+                const guestMatch = !guestFilter || guestName.includes(guestFilter);
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (guestMatch && apartmentMatch) {
+                    block.style.display = 'block';
+                    block.classList.remove('filtered-out');
+                } else {
+                    block.style.display = 'none';
+                    block.classList.add('filtered-out');
+                }
+            });
+
+            // Filter maintenance blocks (apartment filter only)
+            maintenanceBlocks.forEach(block => {
+                const apartmentId = block.dataset.apartmentId || '';
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (apartmentMatch) {
+                    block.style.display = 'block';
+                    block.classList.remove('filtered-out');
+                } else {
+                    block.style.display = 'none';
+                    block.classList.add('filtered-out');
+                }
+            });
+
+            // Update empty day hints visibility
+            updateCalendarEmptyHints();
+        }
+
+        function filterGridView(guestFilter, apartmentFilter) {
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+
+            apartmentCards.forEach(card => {
+                const apartmentId = card.dataset.apartmentId || '';
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (!apartmentMatch) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // Filter rooms within the apartment
+                const roomBlocks = card.querySelectorAll('.room-block');
+                let hasVisibleRooms = false;
+
+                roomBlocks.forEach(roomBlock => {
+                    const guestName = roomBlock.dataset.guestName || '';
+                    const guestMatch = !guestFilter || guestName.includes(guestFilter) || guestName === '';
+
+                    if (guestMatch) {
+                        roomBlock.style.display = 'flex';
+                        hasVisibleRooms = true;
+                    } else {
+                        roomBlock.style.display = 'none';
+                    }
+                });
+
+                // Show apartment card if it has visible rooms or no guest filter is applied
+                card.style.display = (hasVisibleRooms || !guestFilter) ? 'block' : 'none';
+            });
+        }
+
+        function filterListView(guestFilter, apartmentFilter) {
+            const rows = document.querySelectorAll('.allocation-row');
+
+            rows.forEach(row => {
+                const guestName = row.dataset.guest || '';
+                const apartmentId = row.dataset.apartment || '';
+
+                const guestMatch = !guestFilter || guestName.includes(guestFilter);
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                row.style.display = (guestMatch && apartmentMatch) ? '' : 'none';
+            });
+        }
+
+        function updateCalendarEmptyHints() {
+            const calendarCells = document.querySelectorAll('.calendar-cell.current-month');
+
+            calendarCells.forEach(cell => {
+                const visibleBlocks = cell.querySelectorAll('.allocation-block:not(.filtered-out), .maintenance-block:not(.filtered-out)');
+                const emptyHint = cell.querySelector('.empty-day-hint');
+
+                if (emptyHint) {
+                    // Show hint only if no visible blocks
+                    emptyHint.style.display = visibleBlocks.length === 0 ? 'block' : 'none';
+                }
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('guestFilter').value = '';
+            document.getElementById('apartmentFilter').value = '';
+            applyFilters();
+        }
+
+        // Calendar navigation functions
+        function navigateMonth(direction) {
+            const currentMonth = @Model.CurrentMonth;
+            const currentYear = @Model.CurrentYear;
+
+            let newMonth = currentMonth + direction;
+            let newYear = currentYear;
+
+            // Handle year transitions
+            if (newMonth > 12) {
+                newMonth = 1;
+                newYear++;
+            } else if (newMonth < 1) {
+                newMonth = 12;
+                newYear--;
+            }
+
+            // Update URL and navigate
+            const url = new URL(window.location);
+            url.searchParams.set('month', newMonth);
+            url.searchParams.set('year', newYear);
+            window.location.href = url;
+        }
+
+        function goToToday() {
+            const today = new Date();
+            const url = new URL(window.location);
+            url.searchParams.set('month', today.getMonth() + 1);
+            url.searchParams.set('year', today.getFullYear());
+            window.location.href = url;
+        }
+
+        // Calendar interaction functions
+        function handleDayClick(event, dateString) {
+            // If the click was on an allocation or maintenance block, don't handle day click
+            if (event.target.closest('.allocation-block') || event.target.closest('.maintenance-block')) {
+                return;
+            }
+
+            // Parse the date and set default check-out date (next day)
+            const checkInDate = new Date(dateString);
+            const checkOutDate = new Date(checkInDate);
+            checkOutDate.setDate(checkOutDate.getDate() + 1);
+
+            // Create new allocation with pre-filled dates
+            const url = new URL('/Allocations/Create', window.location.origin);
+            url.searchParams.set('checkInDate', dateString);
+            url.searchParams.set('checkOutDate', checkOutDate.toISOString().split('T')[0]);
+
+            window.location.href = url.toString();
+        }
+
+        function editAllocation(event, allocationId) {
+            event.stopPropagation(); // Prevent day click from firing
+            window.location.href = `/Allocations/Edit/${allocationId}`;
+        }
+
+        function editMaintenance(event, maintenanceId) {
+            event.stopPropagation(); // Prevent day click from firing
+            window.location.href = `/Maintenance/Edit/${maintenanceId}`;
+        }
+
+        // Event listeners for filters
         document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const view = urlParams.get('view') || 'active';
-            const button = Array.from(document.querySelectorAll('.btn-group .btn'))
-                .find(btn => btn.textContent.trim().toLowerCase() === view);
-            if (button) {
-                button.classList.add('active');
-                filterMaintenance();
+            document.getElementById('guestFilter').addEventListener('input', applyFilters);
+            document.getElementById('apartmentFilter').addEventListener('change', applyFilters);
+
+            // Add hover effects to calendar cells
+            const calendarCells = document.querySelectorAll('.calendar-cell.current-month');
+            calendarCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    if (!this.querySelector('.allocation-block:not(.filtered-out)') &&
+                        !this.querySelector('.maintenance-block:not(.filtered-out)')) {
+                        this.classList.add('calendar-cell-hover');
+                    }
+                });
+
+                cell.addEventListener('mouseleave', function() {
+                    this.classList.remove('calendar-cell-hover');
+                });
+            });
+
+            // Apply initial filters if any
+            applyFilters();
+        });
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(event) {
+            // Only handle keyboard navigation when calendar is visible
+            if (document.getElementById('calendarView').style.display === 'block') {
+                if (event.key === 'ArrowLeft' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(-1);
+                } else if (event.key === 'ArrowRight' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(1);
+                } else if (event.key === 'Home' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    goToToday();
+                }
             }
         });
     </script>
 }
 
-@functions {
-    private string GetCategoryColor(MaintenanceCategory category)
-    {
-        return category switch
-        {
-            MaintenanceCategory.Cleaning => "info",
-            MaintenanceCategory.Repairs => "warning",
-            MaintenanceCategory.Inspection => "primary",
-            MaintenanceCategory.Renovation => "purple",
-            MaintenanceCategory.PestControl => "danger",
-            MaintenanceCategory.Painting => "success",
-            MaintenanceCategory.PlumbingWork => "info",
-            MaintenanceCategory.ElectricalWork => "warning",
-            _ => "secondary"
-        };
+<style>
+    /* Enhanced calendar styling for interactivity */
+    .calendar-cell {
+        position: relative;
+        transition: all 0.2s ease;
     }
+
+        .calendar-cell.current-month {
+            cursor: pointer;
+        }
+
+            .calendar-cell.current-month:hover {
+                background-color: #f8f9fa !important;
+                border-color: #007bff !important;
+                box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+            }
+
+        .calendar-cell.today {
+            border: 2px solid #007bff !important;
+            background-color: #e3f2fd !important;
+        }
+
+    .calendar-cell-hover {
+        background-color: #f8f9fa !important;
+        border-color: #007bff !important;
+    }
+
+    .allocation-block, .maintenance-block {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+        .allocation-block:hover {
+            background-color: #0056b3 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .maintenance-block:hover {
+            background-color: #c82333 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+    .filtered-out {
+        opacity: 0.3;
+        transform: scale(0.95);
+    }
+
+    .empty-day-hint {
+        display: none;
+        text-align: center;
+        padding: 10px 5px;
+        opacity: 0.7;
+    }
+
+    .calendar-cell.current-month:hover .empty-day-hint {
+        display: block;
+    }
+
+    .day-number {
+        pointer-events: none;
+    }
+
+    /* Filter controls styling */
+    #filterControls {
+        transition: all 0.3s ease;
+    }
+
+        #filterControls input, #filterControls select {
+            min-width: 150px;
+        }
+
+    /* Grid view room block styling */
+    .room-block {
+        transition: all 0.2s ease;
+    }
+
+    .apartment-card {
+        transition: all 0.3s ease;
+    }
+
+        .apartment-card.filtered {
+            opacity: 0.6;
+            transform: scale(0.98);
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .allocation-block, .maintenance-block {
+            font-size: 0.7em;
+            padding: 1px 3px;
+        }
+
+        .empty-day-hint {
+            font-size: 0.7em;
+            padding: 5px 2px;
+        }
+
+        #filterControls {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+
+            #filterControls input, #filterControls select {
+                margin: 2px 0;
+                min-width: auto;
+            }
+
+        .card-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+
+        .calendar-quick-nav {
+            margin-top: 10px;
+        }
+    }
+</style>
 }

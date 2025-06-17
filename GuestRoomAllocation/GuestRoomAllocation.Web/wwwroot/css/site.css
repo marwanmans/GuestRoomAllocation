@@ -1,22 +1,121 @@
-html {
-  font-size: 14px;
+/* Dashboard specific styles - Add to the end of site.css */
+
+/* Enhanced calendar styling for interactivity */
+.calendar-cell {
+    position: relative;
+    transition: all 0.2s ease;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    .calendar-cell.current-month {
+        cursor: pointer;
+    }
+
+        .calendar-cell.current-month:hover {
+            background-color: #f8f9fa !important;
+            border-color: #007bff !important;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+        }
+
+    .calendar-cell.today {
+        border: 2px solid #007bff !important;
+        background-color: #e3f2fd !important;
+    }
+
+.calendar-cell-hover {
+    background-color: #f8f9fa !important;
+    border-color: #007bff !important;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.allocation-block, .maintenance-block {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    .allocation-block:hover {
+        background-color: #0056b3 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .maintenance-block:hover {
+        background-color: #c82333 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+.filtered-out {
+    opacity: 0.3;
+    transform: scale(0.95);
 }
 
-body {
-  margin-bottom: 60px;
+.empty-day-hint {
+    display: none;
+    text-align: center;
+    padding: 10px 5px;
+    opacity: 0.7;
+}
+
+.calendar-cell.current-month:hover .empty-day-hint {
+    display: block;
+}
+
+.day-number {
+    pointer-events: none;
+}
+
+/* Filter controls styling */
+#filterControls {
+    transition: all 0.3s ease;
+}
+
+    #filterControls input, #filterControls select {
+        min-width: 150px;
+    }
+
+/* Grid view room block styling */
+.room-block {
+    transition: all 0.2s ease;
+}
+
+.apartment-card {
+    transition: all 0.3s ease;
+}
+
+    .apartment-card.filtered {
+        opacity: 0.6;
+        transform: scale(0.98);
+    }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .allocation-block, .maintenance-block {
+        font-size: 0.7em;
+        padding: 1px 3px;
+    }
+
+    .empty-day-hint {
+        font-size: 0.7em;
+        padding: 5px 2px;
+    }
+
+    #filterControls {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+        #filterControls input, #filterControls select {
+            margin: 2px 0;
+            min-width: auto;
+        }
+
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .calendar-quick-nav {
+        margin-top: 10px;
+    }
 }

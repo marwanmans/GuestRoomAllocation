@@ -1,4 +1,8 @@
-﻿using System;
+﻿// This is what the migration should look like - run this command in Package Manager Console:
+// Add-Migration AddUserSystem
+// Update-Database
+
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,167 +10,119 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GuestRoomAllocation.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddUserSystem : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Apartments",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    MapLocation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    TotalBathrooms = table.Column<int>(type: "int", nullable: false),
-                    CommonAreas = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Facilities = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Amenities = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    HasLaundry = table.Column<bool>(type: "bit", nullable: false),
-                    OverallSpace = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Apartments", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Guests",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    JobPosition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastLoginDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Guests", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Rooms",
+                name: "UserApartmentAccess",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoomNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     ApartmentId = table.Column<int>(type: "int", nullable: false),
-                    Size = table.Column<int>(type: "int", nullable: false),
-                    HasPrivateBathroom = table.Column<bool>(type: "bit", nullable: false),
-                    MaxOccupancy = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    GrantedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Rooms", x => x.Id);
+                    table.PrimaryKey("PK_UserApartmentAccess", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Rooms_Apartments_ApartmentId",
+                        name: "FK_UserApartmentAccess_Apartments_ApartmentId",
                         column: x => x.ApartmentId,
                         principalTable: "Apartments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserApartmentAccess_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Allocations",
+                name: "UserGuestAccess",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     GuestId = table.Column<int>(type: "int", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
-                    CheckInDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckOutDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BathroomPreferenceOverride = table.Column<bool>(type: "bit", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    GrantedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Allocations", x => x.Id);
-                    table.CheckConstraint("CK_Allocation_CheckOutAfterCheckIn", "[CheckOutDate] > [CheckInDate]");
+                    table.PrimaryKey("PK_UserGuestAccess", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Allocations_Guests_GuestId",
+                        name: "FK_UserGuestAccess_Guests_GuestId",
                         column: x => x.GuestId,
                         principalTable: "Guests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Allocations_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
+                        name: "FK_UserGuestAccess_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "MaintenancePeriods",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Category = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ApartmentId = table.Column<int>(type: "int", nullable: true),
-                    RoomId = table.Column<int>(type: "int", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MaintenancePeriods", x => x.Id);
-                    table.CheckConstraint("CK_MaintenancePeriod_ApartmentOrRoom", "([ApartmentId] IS NOT NULL AND [RoomId] IS NULL) OR ([ApartmentId] IS NULL AND [RoomId] IS NOT NULL)");
-                    table.CheckConstraint("CK_MaintenancePeriod_EndAfterStart", "[EndDate] >= [StartDate]");
-                    table.ForeignKey(
-                        name: "FK_MaintenancePeriods_Apartments_ApartmentId",
-                        column: x => x.ApartmentId,
-                        principalTable: "Apartments",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_MaintenancePeriods_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "Id");
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_UserApartmentAccess_ApartmentId",
+                table: "UserApartmentAccess",
+                column: "ApartmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Allocations_GuestId",
-                table: "Allocations",
+                name: "IX_UserApartmentAccess_UserId_ApartmentId",
+                table: "UserApartmentAccess",
+                columns: new[] { "UserId", "ApartmentId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserGuestAccess_GuestId",
+                table: "UserGuestAccess",
                 column: "GuestId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Allocations_RoomId",
-                table: "Allocations",
-                column: "RoomId");
+                name: "IX_UserGuestAccess_UserId_GuestId",
+                table: "UserGuestAccess",
+                columns: new[] { "UserId", "GuestId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Guests_Email",
-                table: "Guests",
+                name: "IX_Users_Email",
+                table: "Users",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MaintenancePeriods_ApartmentId",
-                table: "MaintenancePeriods",
-                column: "ApartmentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MaintenancePeriods_RoomId",
-                table: "MaintenancePeriods",
-                column: "RoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Rooms_ApartmentId_RoomNumber",
-                table: "Rooms",
-                columns: new[] { "ApartmentId", "RoomNumber" },
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
                 unique: true);
         }
 
@@ -174,19 +130,13 @@ namespace GuestRoomAllocation.Web.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Allocations");
+                name: "UserApartmentAccess");
 
             migrationBuilder.DropTable(
-                name: "MaintenancePeriods");
+                name: "UserGuestAccess");
 
             migrationBuilder.DropTable(
-                name: "Guests");
-
-            migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
-                name: "Apartments");
+                name: "Users");
         }
     }
 }
