@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace GuestRoomAllocation.Web.Pages.Admin.Users
 {
-    public class Index1Model : PageModel
+    public class CreateModel : PageModel
     {
         public void OnGet()
         {
