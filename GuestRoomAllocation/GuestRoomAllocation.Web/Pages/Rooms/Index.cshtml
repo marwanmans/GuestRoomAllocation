@@ -1,0 +1,298 @@
+@page
+@model RoomsIndexModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+@section HeaderActions {
+    <a href="/Rooms/Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Room
+    </a>
+}
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <select id="apartmentFilter" class="form-select">
+            <option value="">All Apartments</option>
+            @foreach (var apartment in Model.Apartments)
+            {
+                <option value="@apartment.Id">@apartment.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select id="statusFilter" class="form-select">
+            <option value="">All Rooms</option>
+            <option value="available">Available</option>
+            <option value="occupied">Occupied</option>
+            <option value="maintenance">In Maintenance</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select id="bathroomFilter" class="form-select">
+            <option value="">All Bathroom Types</option>
+            <option value="private">Private Bathroom</option>
+            <option value="shared">Shared Bathroom</option>
+        </select>
+    </div>
+</div>
+
+@foreach (var apartment in Model.Apartments)
+{
+    <div class="apartment-section mb-4" data-apartment-id="@apartment.Id">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">@apartment.Name</h5>
+                        <small class="text-muted">@apartment.Address</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-info">@apartment.Rooms.Count rooms</span>
+                        <span class="badge bg-secondary">@apartment.TotalBathrooms bathrooms</span>
+                        @if (apartment.HasLaundry)
+                        {
+                            <span class="badge bg-success">Laundry</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var room in apartment.Rooms.OrderBy(r => r.RoomNumber))
+                    {
+                        var currentAllocation = Model.GetCurrentAllocation(room.Id);
+                        var isInMaintenance = Model.IsRoomInMaintenance(room.Id);
+                        var upcomingAllocation = Model.GetUpcomingAllocation(room.Id);
+
+                        var statusClass = isInMaintenance ? "danger" :
+                        currentAllocation != null ? "primary" : "success";
+                        var statusText = isInMaintenance ? "Maintenance" :
+                        currentAllocation != null ? "Occupied" : "Available";
+
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="room-card card border-@statusClass"
+                                 data-apartment="@apartment.Id"
+                                 data-status="@(isInMaintenance ? "maintenance" : currentAllocation != null ? "occupied" : "available")"
+                                 data-bathroom="@(room.HasPrivateBathroom ? "private" : "shared")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">
+                                            Room @room.RoomNumber
+                                            @if (room.HasPrivateBathroom)
+                                            {
+                                                <i class="fas fa-bath text-info" title="Private Bathroom"></i>
+                                            }
+                                        </h6>
+                                        <span class="badge bg-@statusClass">@statusText</span>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            @room.Size m² • Max @room.MaxOccupancy guest@(room.MaxOccupancy > 1 ? "s" : "")
+                                        </small>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(room.Description))
+                                    {
+                                        <p class="card-text"><small>@room.Description</small></p>
+                                    }
+
+                                    @if (currentAllocation != null)
+                                    {
+                                        <div class="alert alert-info py-2 mb-2">
+                                            <strong>@currentAllocation.Guest.FullName</strong>
+                                            <br><small>Until @currentAllocation.CheckOutDate.ToString("MMM dd, yyyy")</small>
+                                            @if (currentAllocation.BathroomPreferenceOverride)
+                                            {
+                                                <br>
+
+                                                <span class="badge bg-warning">Bathroom Override</span>
+                                            }
+                                        </div>
+                                    }
+                                    else if (isInMaintenance)
+                                    {
+                                        var maintenance = Model.GetCurrentMaintenance(room.Id);
+                                        if (maintenance != null)
+                                        {
+                                            <div class="alert alert-danger py-2 mb-2">
+                                                <strong>@maintenance.Category</strong>
+                                                <br><small>Until @maintenance.EndDate.ToString("MMM dd, yyyy")</small>
+                                                <br><small>@maintenance.Description</small>
+                                            </div>
+                                        }
+                                    }
+                                    else if (upcomingAllocation != null)
+                                    {
+                                        <div class="alert alert-warning py-2 mb-2">
+                                            <strong>Upcoming: @upcomingAllocation.Guest.FullName</strong>
+                                            <br><small>From @upcomingAllocation.CheckInDate.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                    }
+
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="/Rooms/Edit/@room.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (currentAllocation == null && !isInMaintenance)
+                                        {
+                                            <a href="/Allocations/Create?roomId=@room.Id" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-user-plus"></i>
+                                            </a>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-outline-info"
+                                                data-bs-toggle="modal" data-bs-target="#maintenanceModal"
+                                                data-room-id="@room.Id" data-room-name="@apartment.Name - @room.RoomNumber">
+                                            <i class="fas fa-tools"></i>
+                                        </button>
+                                        <a href="/Rooms/Delete/@room.Id" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Maintenance Modal -->
+<div class="modal fade" id="maintenanceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule Maintenance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="maintenanceForm" method="post" asp-page-handler="AddMaintenance">
+                <div class="modal-body">
+                    <input type="hidden" id="maintenanceRoomId" name="RoomId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Room</label>
+                        <input type="text" id="maintenanceRoomName" class="form-control" readonly />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" id="startDate" name="StartDate" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" id="endDate" name="EndDate" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select id="category" name="Category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option value="0">Cleaning</option>
+                            <option value="1">Repairs</option>
+                            <option value="2">Inspection</option>
+                            <option value="3">Renovation</option>
+                            <option value="4">Pest Control</option>
+                            <option value="5">Painting</option>
+                            <option value="6">Plumbing Work</option>
+                            <option value="7">Electrical Work</option>
+                            <option value="8">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" id="description" name="Description" class="form-control"
+                               placeholder="Brief description of maintenance work" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea id="notes" name="Notes" class="form-control" rows="3"
+                                  placeholder="Additional details or instructions"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Schedule Maintenance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('apartmentFilter').addEventListener('change', filterRooms);
+        document.getElementById('statusFilter').addEventListener('change', filterRooms);
+        document.getElementById('bathroomFilter').addEventListener('change', filterRooms);
+
+        function filterRooms() {
+            const apartmentFilter = document.getElementById('apartmentFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const bathroomFilter = document.getElementById('bathroomFilter').value;
+
+            const apartmentSections = document.querySelectorAll('.apartment-section');
+            const roomCards = document.querySelectorAll('.room-card');
+
+            apartmentSections.forEach(section => {
+                const apartmentId = section.dataset.apartmentId;
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                if (!apartmentMatch) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                const roomsInApartment = section.querySelectorAll('.room-card');
+                let visibleRooms = 0;
+
+                roomsInApartment.forEach(room => {
+                    const status = room.dataset.status;
+                    const bathroom = room.dataset.bathroom;
+
+                    const statusMatch = !statusFilter || status === statusFilter;
+                    const bathroomMatch = !bathroomFilter || bathroom === bathroomFilter;
+
+                    if (statusMatch && bathroomMatch) {
+                        room.style.display = 'block';
+                        visibleRooms++;
+                    } else {
+                        room.style.display = 'none';
+                    }
+                });
+
+                section.style.display = visibleRooms > 0 ? 'block' : 'none';
+            });
+        }
+
+        // Maintenance modal handling
+        document.getElementById('maintenanceModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const roomId = button.getAttribute('data-room-id');
+            const roomName = button.getAttribute('data-room-name');
+
+            document.getElementById('maintenanceRoomId').value = roomId;
+            document.getElementById('maintenanceRoomName').value = roomName;
+
+            // Set default dates (today and tomorrow)
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = tomorrowStr;
+        });
+    </script>
+}

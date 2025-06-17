@@ -1,0 +1,126 @@
+@page "{id:int}"
+@model EditGuestModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Edit Guest";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Edit Guest: @Model.Guest.FullName</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" asp-for="Guest.Id" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Guest.FirstName" class="form-label">First Name *</label>
+                                <input asp-for="Guest.FirstName" class="form-control" required />
+                                <span asp-validation-for="Guest.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Guest.LastName" class="form-label">Last Name *</label>
+                                <input asp-for="Guest.LastName" class="form-control" required />
+                                <span asp-validation-for="Guest.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Guest.Email" class="form-label">Email *</label>
+                                <input asp-for="Guest.Email" type="email" class="form-control" required />
+                                <span asp-validation-for="Guest.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Guest.Phone" class="form-label">Phone *</label>
+                                <input asp-for="Guest.Phone" type="tel" class="form-control" required />
+                                <span asp-validation-for="Guest.Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Guest.JobPosition" class="form-label">Job Position</label>
+                        <input asp-for="Guest.JobPosition" class="form-control" />
+                        <span asp-validation-for="Guest.JobPosition" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Guest.Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Guest.Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Guest.Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/Guests" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Guests
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Guest
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-history"></i> Allocation History</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Allocations.Any())
+                {
+                    @foreach (var allocation in Model.Allocations.OrderByDescending(a => a.CheckInDate))
+                    {
+                        <div class="mb-3 p-2 border rounded">
+                            <strong>@allocation.Room.Apartment.Name - @allocation.Room.RoomNumber</strong>
+                            <br>
+                            <small class="text-muted">
+                                @allocation.CheckInDate.ToString("MMM dd, yyyy") -
+                                @allocation.CheckOutDate.ToString("MMM dd, yyyy")
+                                (@allocation.Duration days)
+                            </small>
+                            @if (allocation.BathroomPreferenceOverride)
+                            {
+                                <br>
+
+                                <span class="badge bg-warning">Bathroom Override</span>
+                            }
+                            @if (!string.IsNullOrEmpty(allocation.Notes))
+                            {
+                                <br>
+
+                                <small>@allocation.Notes</small>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">No allocation history</p>
+                }
+
+                <hr>
+                <a href="/Allocations/Create?guestId=@Model.Guest.Id" class="btn btn-success btn-sm">
+                    <i class="fas fa-calendar-plus"></i> New Allocation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

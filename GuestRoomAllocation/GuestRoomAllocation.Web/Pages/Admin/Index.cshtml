@@ -1,0 +1,627 @@
+@page
+@model AdminIndexModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section HeaderActions {
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "calendar" ? "active" : "")"
+                onclick="toggleView('calendar')">
+            <i class="fas fa-calendar"></i> Calendar
+        </button>
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "grid" ? "active" : "")"
+                onclick="toggleView('grid')">
+            <i class="fas fa-th"></i> Grid
+        </button>
+        <button type="button" class="btn btn-outline-primary @(Model.ViewMode == "list" ? "active" : "")"
+                onclick="toggleView('list')">
+            <i class="fas fa-list"></i> List
+        </button>
+    </div>
+}
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.TotalGuests</h4>
+                        <p>Total Guests</p>
+                    </div>
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.OccupiedRooms</h4>
+                        <p>Occupied Rooms</p>
+                    </div>
+                    <i class="fas fa-bed fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.AvailableRooms</h4>
+                        <p>Available Rooms</p>
+                    </div>
+                    <i class="fas fa-door-open fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>@Model.MaintenanceCount</h4>
+                        <p>In Maintenance</p>
+                    </div>
+                    <i class="fas fa-tools fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Controls -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="d-flex align-items-center">
+            <label for="monthSelect" class="form-label me-2">Month:</label>
+            <select id="monthSelect" class="form-select w-auto" onchange="changeMonth()">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i" selected="@(i == Model.CurrentMonth)">
+                        @(new DateTime(2024, i, 1).ToString("MMMM"))
+                    </option>
+                }
+            </select>
+            <label for="yearSelect" class="form-label ms-3 me-2">Year:</label>
+            <select id="yearSelect" class="form-select w-auto" onchange="changeMonth()">
+                @for (int year = DateTime.Now.Year - 1; year <= DateTime.Now.Year + 2; year++)
+                {
+                    <option value="@year" selected="@(year == Model.CurrentYear)">@year</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex align-items-center justify-content-end" id="filterControls" style="display: none;">
+            <input type="text" id="guestFilter" class="form-control w-auto me-2" placeholder="Filter by guest name...">
+            <select id="apartmentFilter" class="form-select w-auto">
+                <option value="">All Apartments</option>
+                @foreach (var apartment in Model.Apartments)
+                {
+                    <option value="@apartment.Id">@apartment.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar View -->
+<div id="calendarView" style="display: @(Model.ViewMode == "calendar" ? "block" : "none")">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="navigateMonth(-1)" title="Previous Month">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="calendarTitle">@Model.CurrentMonthName @Model.CurrentYear</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="navigateMonth(1)" title="Next Month">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </h5>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Click on any day to add a new allocation, or click on existing allocations to edit them
+                    </small>
+                </div>
+                <div class="calendar-quick-nav">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="goToToday()" title="Go to Today">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="calendar-grid">
+                <!-- Calendar Headers -->
+                <div class="text-center fw-bold p-2 bg-light">Sun</div>
+                <div class="text-center fw-bold p-2 bg-light">Mon</div>
+                <div class="text-center fw-bold p-2 bg-light">Tue</div>
+                <div class="text-center fw-bold p-2 bg-light">Wed</div>
+                <div class="text-center fw-bold p-2 bg-light">Thu</div>
+                <div class="text-center fw-bold p-2 bg-light">Fri</div>
+                <div class="text-center fw-bold p-2 bg-light">Sat</div>
+
+                @foreach (var day in Model.CalendarDays)
+                {
+                    <div class="calendar-cell @(day.IsCurrentMonth ? "current-month" : "text-muted bg-light") @(day.Date.Date == DateTime.Today ? "today" : "")"
+                         data-date="@day.Date.ToString("yyyy-MM-dd")"
+                         onclick="handleDayClick(event, '@day.Date.ToString("yyyy-MM-dd")')">
+                        <div class="fw-bold day-number">@day.Day</div>
+                        @foreach (var allocation in day.Allocations)
+                        {
+                            <div class="allocation-block"
+                                 title="@allocation.Guest.FullName - @allocation.Room.Apartment.Name (@allocation.Room.RoomNumber)"
+                                 data-allocation-id="@allocation.Id"
+                                 onclick="editAllocation(event, @allocation.Id)">
+                                <i class="fas fa-user"></i> @allocation.Guest.FullName.Split(' ')[0]
+                            </div>
+                        }
+                        @foreach (var maintenance in day.MaintenancePeriods)
+                        {
+                            <div class="maintenance-block"
+                                 title="@maintenance.Description - @maintenance.Target"
+                                 data-maintenance-id="@maintenance.Id"
+                                 onclick="editMaintenance(event, @maintenance.Id)">
+                                <i class="fas fa-tools"></i> @maintenance.Category
+                            </div>
+                        }
+                        @if (!day.Allocations.Any() && !day.MaintenancePeriods.Any() && day.IsCurrentMonth)
+                        {
+                            <div class="empty-day-hint">
+                                <i class="fas fa-plus text-muted"></i>
+                                <small class="text-muted">Click to add</small>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grid View -->
+<div id="gridView" style="display: @(Model.ViewMode == "grid" ? "block" : "none")">
+    <div class="row">
+        @foreach (var apartment in Model.Apartments)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>@apartment.Name</h6>
+                        <small class="text-muted">@apartment.Address</small>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var room in apartment.Rooms)
+                        {
+                            var currentAllocation = Model.GetCurrentAllocation(room.Id);
+                            var isInMaintenance = Model.IsRoomInMaintenance(room.Id);
+
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded
+                                @(isInMaintenance ? "bg-danger text-white" :
+                                  currentAllocation != null ? "bg-primary text-white" : "bg-light")">
+                                <span>
+                                    <strong>@room.RoomNumber</strong>
+                                    @if (room.HasPrivateBathroom)
+                                    {
+                                        <i class="fas fa-bath" title="Private Bathroom"></i>
+                                    }
+                                </span>
+                                <span>
+                                    @if (isInMaintenance)
+                                    {
+                                        <i class="fas fa-tools"></i>
+                                        @* Maintenance *@
+                                    }
+                                    else if (currentAllocation != null)
+                                    {
+                                        @currentAllocation.Guest.FullName
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">Available</span>
+                                    }
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- List View -->
+<div id="listView" style="display: @(Model.ViewMode == "list" ? "block" : "none")">
+    <div class="card">
+        <div class="card-header">
+            <h5>Current Allocations</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Guest</th>
+                            <th>Apartment</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Duration</th>
+                            <th>Bathroom</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allocationTableBody">
+                        @foreach (var allocation in Model.CurrentAllocations)
+                        {
+                            <tr class="allocation-row"
+                                data-guest="@allocation.Guest.FullName.ToLower()"
+                                data-apartment="@allocation.Room.ApartmentId">
+                                <td>
+                                    <strong>@allocation.Guest.FullName</strong>
+                                    @if (!string.IsNullOrEmpty(allocation.Guest.JobPosition))
+                                    {
+                                        <br>
+
+                                        <small class="text-muted">@allocation.Guest.JobPosition</small>
+                                    }
+                                </td>
+                                <td>@allocation.Room.Apartment.Name</td>
+                                <td>
+                                    @allocation.Room.RoomNumber
+                                    @if (allocation.Room.HasPrivateBathroom)
+                                    {
+                                        <i class="fas fa-bath text-info" title="Private Bathroom"></i>
+                                    }
+                                </td>
+                                <td>@allocation.CheckInDate.ToString("MMM dd, yyyy")</td>
+                                <td>@allocation.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                                <td>@allocation.Duration days</td>
+                                <td>
+                                    @if (allocation.BathroomPreferenceOverride)
+                                    {
+                                        <span class="badge bg-warning">Override</span>
+                                    }
+                                    else if (allocation.Room.HasPrivateBathroom)
+                                    {
+                                        <span class="badge bg-success">Private</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Shared</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="/Allocations/Edit/@allocation.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleView(view) {
+            // Hide all views
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('gridView').style.display = 'none';
+            document.getElementById('listView').style.display = 'none';
+
+            // Show selected view
+            document.getElementById(view + 'View').style.display = 'block';
+
+            // Update buttons
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Show/hide filter controls for list view
+            const filterControls = document.getElementById('filterControls');
+            if (view === 'list') {
+                filterControls.style.display = 'flex';
+            } else {
+                filterControls.style.display = 'none';
+            }
+
+            // Update URL without refresh
+            const url = new URL(window.location);
+            url.searchParams.set('view', view);
+            window.history.replaceState({}, '', url);
+        }
+
+        function changeMonth() {
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const url = new URL(window.location);
+            url.searchParams.set('month', month);
+            url.searchParams.set('year', year);
+            window.location.href = url;
+        }
+
+        // Calendar navigation functions
+        function navigateMonth(direction) {
+            const currentMonth = @Model.CurrentMonth;
+            const currentYear = @Model.CurrentYear;
+
+            let newMonth = currentMonth + direction;
+            let newYear = currentYear;
+
+            // Handle year transitions
+            if (newMonth > 12) {
+                newMonth = 1;
+                newYear++;
+            } else if (newMonth < 1) {
+                newMonth = 12;
+                newYear--;
+            }
+
+            // Update URL and navigate
+            const url = new URL(window.location);
+            url.searchParams.set('month', newMonth);
+            url.searchParams.set('year', newYear);
+            window.location.href = url;
+        }
+
+        function goToToday() {
+            const today = new Date();
+            const url = new URL(window.location);
+            url.searchParams.set('month', today.getMonth() + 1);
+            url.searchParams.set('year', today.getFullYear());
+            window.location.href = url;
+        }
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(event) {
+            // Only handle keyboard navigation when calendar is visible
+            if (document.getElementById('calendarView').style.display !== 'none') {
+                if (event.key === 'ArrowLeft' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(-1);
+                } else if (event.key === 'ArrowRight' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    navigateMonth(1);
+                } else if (event.key === 'Home' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    goToToday();
+                }
+            }
+        });
+
+        // Calendar interaction functions
+        function handleDayClick(event, dateString) {
+            // If the click was on an allocation or maintenance block, don't handle day click
+            if (event.target.closest('.allocation-block') || event.target.closest('.maintenance-block')) {
+                return;
+            }
+
+            // Parse the date and set default check-out date (next day)
+            const checkInDate = new Date(dateString);
+            const checkOutDate = new Date(checkInDate);
+            checkOutDate.setDate(checkOutDate.getDate() + 1);
+
+            // Create new allocation with pre-filled dates
+            const url = new URL('/Allocations/Create', window.location.origin);
+            url.searchParams.set('checkInDate', dateString);
+            url.searchParams.set('checkOutDate', checkOutDate.toISOString().split('T')[0]);
+
+            window.location.href = url.toString();
+        }
+
+        function editAllocation(event, allocationId) {
+            event.stopPropagation(); // Prevent day click from firing
+            window.location.href = `/Allocations/Edit/${allocationId}`;
+        }
+
+        function editMaintenance(event, maintenanceId) {
+            event.stopPropagation(); // Prevent day click from firing
+            window.location.href = `/Maintenance/Edit/${maintenanceId}`;
+        }
+
+        // Filter functionality for list view
+        document.getElementById('guestFilter').addEventListener('input', function() {
+            filterTable();
+        });
+
+        document.getElementById('apartmentFilter').addEventListener('change', function() {
+            filterTable();
+        });
+
+        function filterTable() {
+            const guestFilter = document.getElementById('guestFilter').value.toLowerCase();
+            const apartmentFilter = document.getElementById('apartmentFilter').value;
+            const rows = document.querySelectorAll('.allocation-row');
+
+            rows.forEach(row => {
+                const guestName = row.dataset.guest;
+                const apartmentId = row.dataset.apartment;
+
+                const guestMatch = !guestFilter || guestName.includes(guestFilter);
+                const apartmentMatch = !apartmentFilter || apartmentId === apartmentFilter;
+
+                row.style.display = guestMatch && apartmentMatch ? '' : 'none';
+            });
+        }
+
+        // Add visual feedback for interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to calendar cells
+            const calendarCells = document.querySelectorAll('.calendar-cell.current-month');
+            calendarCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    if (!this.querySelector('.allocation-block') && !this.querySelector('.maintenance-block')) {
+                        this.classList.add('calendar-cell-hover');
+                    }
+                });
+
+                cell.addEventListener('mouseleave', function() {
+                    this.classList.remove('calendar-cell-hover');
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* Enhanced calendar styling for interactivity */
+        .calendar-cell {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+            .calendar-cell.current-month {
+                cursor: pointer;
+            }
+
+                .calendar-cell.current-month:hover {
+                    background-color: #f8f9fa !important;
+                    border-color: #007bff !important;
+                    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+                }
+
+            .calendar-cell.today {
+                border: 2px solid #007bff !important;
+                background-color: #e3f2fd !important;
+            }
+
+        .calendar-cell-hover {
+            background-color: #f8f9fa !important;
+            border-color: #007bff !important;
+        }
+
+        .allocation-block {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+            .allocation-block:hover {
+                background-color: #0056b3 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+
+        .maintenance-block {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+            .maintenance-block:hover {
+                background-color: #c82333 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+
+        .empty-day-hint {
+            display: none;
+            text-align: center;
+            padding: 10px 5px;
+            opacity: 0.7;
+        }
+
+        .calendar-cell.current-month:hover .empty-day-hint {
+            display: block;
+        }
+
+        .day-number {
+            pointer-events: none; /* Ensure day number doesn't interfere with clicks */
+        }
+
+        /* Calendar navigation styling */
+        .calendar-quick-nav .btn {
+            transition: all 0.2s ease;
+        }
+
+            .calendar-quick-nav .btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+        /* Navigation arrows styling */
+        .btn.btn-outline-secondary {
+            border-color: #dee2e6;
+            color: #6c757d;
+            transition: all 0.2s ease;
+        }
+
+            .btn.btn-outline-secondary:hover {
+                background-color: #f8f9fa;
+                border-color: #007bff;
+                color: #007bff;
+                transform: scale(1.05);
+            }
+
+            .btn.btn-outline-secondary:active {
+                transform: scale(0.98);
+            }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .allocation-block, .maintenance-block
+
+        {
+            font-size: 0.7em;
+            padding: 1px 3px;
+        }
+
+        .empty-day-hint {
+            font-size: 0.7em;
+            padding: 5px 2px;
+        }
+
+        .calendar-quick-nav {
+            margin-top: 10px;
+        }
+
+        .card-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+
+        .btn.btn-outline-secondary.btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        }
+
+        /* Keyboard navigation hint */
+        .calendar-keyboard-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .calendar-view:hover .calendar-keyboard-hint {
+            opacity: 1;
+        }
+    </style>
+}

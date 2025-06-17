@@ -1,0 +1,215 @@
+﻿@page "{id:int}"
+@model EditMaintenanceModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Edit Maintenance";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Edit Maintenance: @Model.Maintenance.Description</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" asp-for="Maintenance.Id" />
+                    <input type="hidden" asp-for="Maintenance.ApartmentId" />
+                    <input type="hidden" asp-for="Maintenance.RoomId" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Location *</label>
+                                <input type="text" class="form-control" readonly
+                                       value="@(Model.Maintenance.ApartmentId.HasValue ?
+                                               $"{Model.Maintenance.Apartment?.Name} (Entire Apartment)" :
+                                               $"{Model.Maintenance.Room?.Apartment?.Name} - Room {Model.Maintenance.Room?.RoomNumber}")" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Maintenance.StartDate" class="form-label">Start Date *</label>
+                                        <input asp-for="Maintenance.StartDate" type="date" class="form-control" required />
+                                        <span asp-validation-for="Maintenance.StartDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Maintenance.EndDate" class="form-label">End Date *</label>
+                                        <input asp-for="Maintenance.EndDate" type="date" class="form-control" required />
+                                        <span asp-validation-for="Maintenance.EndDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Maintenance.Description" class="form-label">Description *</label>
+                                <input asp-for="Maintenance.Description" class="form-control" required />
+                                <span asp-validation-for="Maintenance.Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Maintenance.Notes" class="form-label">Notes</label>
+                                <textarea asp-for="Maintenance.Notes" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Maintenance.Notes" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/Maintenance" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Maintenance
+                                </a>
+                                <div>
+                                    @if (Model.GetMaintenanceStatus() != "completed")
+                                    {
+                                        <button type="submit" name="action" value="complete" class="btn btn-success me-2">
+                                            <i class="fas fa-check"></i> Mark Complete
+                                        </button>
+                                    }
+                                    <button type="submit" name="action" value="update" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Update Maintenance
+                                    </button>
+                                </div>
+                            </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <!-- Status Information -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Status Information</h6>
+            </div>
+            <div class="card-body">
+                @{
+                    var status = Model.GetMaintenanceStatus();
+                    var statusClass = status switch
+                    {
+                        "active" => "danger",
+                        "scheduled" => "warning",
+                        "completed" => "success",
+                        _ => "secondary"
+                    };
+                }
+                <div class="mb-3">
+                    <span class="badge bg-@statusClass fs-6">@status.ToUpper()</span>
+                </div>
+
+                <div class="mb-2">
+                    <strong>Duration:</strong> @Model.Maintenance.Duration day@(Model.Maintenance.Duration > 1 ? "s" : "")
+                </div>
+
+                @if (status == "active")
+                {
+                    var remainingDays = (Model.Maintenance.EndDate - DateTime.Today).Days;
+                    <div class="mb-2">
+                        <strong>Time Remaining:</strong>
+                        @if (remainingDays > 0)
+                        {
+                            <span class="text-success">@remainingDays day@(remainingDays > 1 ? "s" : "")</span>
+                        }
+                        else if (remainingDays == 0)
+                        {
+                            <span class="text-warning">Ends today</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">Overdue by @Math.Abs(remainingDays) day@(Math.Abs(remainingDays) > 1 ? "s" : "")</span>
+                        }
+                    </div>
+                }
+                else if (status == "scheduled")
+                {
+                    var daysToStart = (Model.Maintenance.StartDate - DateTime.Today).Days;
+                    <div class="mb-2">
+                        <strong>Starts in:</strong>
+                        <span class="@(daysToStart <= 7 ? "text-warning" : "text-info")">
+                            @daysToStart day@(daysToStart > 1 ? "s" : "")
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Conflict Check -->
+        @if (Model.ConflictingAllocations.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header bg-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Allocation Conflicts</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-warning">
+                        <strong>Warning:</strong> This maintenance period conflicts with existing allocations.
+                    </p>
+                    @foreach (var allocation in Model.ConflictingAllocations)
+                    {
+                        <div class="alert alert-warning py-2 mb-2">
+                            <strong>@allocation.Guest.FullName</strong>
+                            <br><small>@allocation.CheckInDate.ToString("MMM dd") - @allocation.CheckOutDate.ToString("MMM dd, yyyy")</small>
+                            <div class="mt-1">
+                                <a href="/Allocations/Edit/@allocation.Id" class="btn btn-xs btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Reschedule
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Location Details -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-map-marker-alt"></i> Location Details</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Maintenance.ApartmentId.HasValue)
+                {
+                    <div class="mb-2">
+                        <strong>Type:</strong> Entire Apartment
+                    </div>
+                    <div class="mb-2">
+                        <strong>Apartment:</strong> @Model.Maintenance.Apartment?.Name
+                    </div>
+                    <div class="mb-2">
+                        <strong>Address:</strong> @Model.Maintenance.Apartment?.Address
+                    </div>
+                    <div class="mb-2">
+                        <strong>Affected Rooms:</strong> @Model.Maintenance.Apartment?.Rooms.Count rooms
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-2">
+                        <strong>Type:</strong> Specific Room
+                    </div>
+                    <div class="mb-2">
+                        <strong>Apartment:</strong> @Model.Maintenance.Room?.Apartment?.Name
+                    </div>
+                    <div class="mb-2">
+                        <strong>Room:</strong> @Model.Maintenance.Room?.RoomNumber
+                    </div>
+                    <div class="mb-2">
+                        <strong>Size:</strong> @Model.Maintenance.Room?.Size m²
+                    </div>
+                    @if (Model.Maintenance.Room?.HasPrivateBathroom == true)
+                    {
+                        <div class="mb-2">
+                            <span class="badge bg-info">
+                                <i class="fas fa-bath"></i> Private Bathroom
+                            </span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

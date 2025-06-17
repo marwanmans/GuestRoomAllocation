@@ -1,0 +1,205 @@
+﻿@page "{id:int}"
+@model DeleteMaintenanceModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Delete Maintenance";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="fas fa-exclamation-triangle"></i> Delete Maintenance Period</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Are you sure you want to delete this maintenance period?</p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Maintenance Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Location:</strong> 
+                                @if (Model.Maintenance.ApartmentId.HasValue)
+                                {
+                                    @($"{Model.Maintenance.Apartment?.Name} (Entire Apartment)")
+                                }
+                                else
+                                {
+                                    @($"{Model.Maintenance.Room?.Apartment?.Name} - Room {Model.Maintenance.Room?.RoomNumber}")
+                                }
+                            </li>
+                            <li><strong>Category:</strong> @Model.Maintenance.Category</li>
+                            <li><strong>Description:</strong> @Model.Maintenance.Description</li>
+                            <li><strong>Period:</strong> @Model.Maintenance.StartDate.ToString("MMM dd, yyyy") - @Model.Maintenance.EndDate.ToString("MMM dd, yyyy")</li>
+                            <li><strong>Duration:</strong> @Model.Maintenance.Duration day@(Model.Maintenance.Duration > 1 ? "s" : "")</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Impact Assessment:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Status:</strong> 
+                                @{
+                                    var status = Model.GetMaintenanceStatus();
+                                    var statusClass = status switch
+                                    {
+                                        "active" => "danger",
+                                        "scheduled" => "warning",
+                                        "completed" => "success",
+                                        _ => "secondary"
+                                    };
+                                }
+                                <span class="badge bg-@statusClass">@status.ToUpper()</span>
+                            </li>
+                            @if (Model.ConflictingAllocations.Any())
+                            {
+                                    <li><strong>Affected Allocations:</strong> @Model.ConflictingAllocations.Count</li>
+                            }
+                            @if (Model.Maintenance.ApartmentId.HasValue)
+                            {
+                                    <li><strong>Affected Rooms:</strong> @Model.Maintenance.Apartment?.Rooms.Count</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                @if (status == "active")
+                {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> This maintenance is currently active. 
+                            Deleting it will immediately make the location available for allocation.
+                        </div>
+                }
+
+                @if (Model.ConflictingAllocations.Any())
+                {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> This maintenance period has conflicting allocations. 
+                            Deleting it may resolve booking conflicts but could affect maintenance planning.
+                        </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Maintenance.Notes))
+                {
+                        <div class="alert alert-info">
+                            <strong>Notes:</strong> @Model.Maintenance.Notes
+                        </div>
+                }
+
+                <form method="post" class="d-inline">
+                    <input type="hidden" asp-for="Maintenance.Id" />
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/Maintenance" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('Are you sure you want to delete this maintenance period? This action cannot be undone.')">
+                            <i class="fas fa-trash"></i> Delete Maintenance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <!-- Conflicting Allocations -->
+        @if (Model.ConflictingAllocations.Any())
+        {
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h6><i class="fas fa-users"></i> Affected Allocations (@Model.ConflictingAllocations.Count)</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Deleting this maintenance will not affect these allocations, but may create scheduling conflicts.
+                        </p>
+                    @foreach (var allocation in Model.ConflictingAllocations)
+                    {
+                                <div class="mb-2 p-2 border rounded">
+                                    <strong>@allocation.Guest.FullName</strong>
+                            @if (Model.Maintenance.RoomId.HasValue)
+                            {
+                                            <br>
+
+                                <small class="text-muted">Same room conflict</small>
+                            }
+                            else
+                            {
+                                            <br>
+
+                                <small class="text-muted">Room @allocation.Room.RoomNumber</small>
+                            }
+                                    <br><small class="text-muted">
+                                @allocation.CheckInDate.ToString("MMM dd") - 
+                                @allocation.CheckOutDate.ToString("MMM dd, yyyy")
+                                    </small>
+                                </div>
+                    }
+                    </div>
+                </div>
+        }
+
+        <!-- Status Information -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Status Information</h6>
+            </div>
+            <div class="card-body">
+                @if (status == "active")
+                {
+                    var remainingDays = (Model.Maintenance.EndDate - DateTime.Today).Days;
+                        <div class="alert alert-danger py-2">
+                            <strong>Currently Active</strong>
+                        @if (remainingDays > 0)
+                        {
+                                    <br>
+
+                            <small>@remainingDays day@(remainingDays > 1 ? "s" : "") remaining</small>
+                        }
+                        else if (remainingDays == 0)
+                        {
+                                    <br>
+
+                            <small>Ends today</small>
+                        }
+                        else
+                        {
+                                    <br>
+
+                            <small>Overdue by @Math.Abs(remainingDays) day@(Math.Abs(remainingDays) > 1 ? "s" : "")</small>
+                        }
+                        </div>
+                }
+                else if (status == "scheduled")
+                {
+                    var daysToStart = (Model.Maintenance.StartDate - DateTime.Today).Days;
+                        <div class="alert alert-warning py-2">
+                            <strong>Scheduled</strong>
+                            <br><small>Starts in @daysToStart day@(daysToStart > 1 ? "s" : "")</small>
+                        </div>
+                }
+                else
+                {
+                        <div class="alert alert-success py-2">
+                            <strong>Completed</strong>
+                            <br><small>Ended @Model.Maintenance.EndDate.ToString("MMM dd, yyyy")</small>
+                        </div>
+                }
+
+                <hr>
+                <p><strong>Deletion Impact:</strong></p>
+                <ul class="small">
+                    <li>Maintenance record will be permanently removed</li>
+                    <li>Location will become available for allocation</li>
+                    <li>Historical maintenance data will be lost</li>
+                    @if (Model.ConflictingAllocations.Any())
+                    {
+                            <li>May resolve current booking conflicts</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
