@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GuestRoomAllocation.Domain\GuestRoomAllocation.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\Allocations\Commands\" />
+    <Folder Include="Features\Allocations\DTOs\" />
+    <Folder Include="Features\Allocations\Queries\" />
+    <Folder Include="Features\Guests\Commands\DeleteGuest\" />
+    <Folder Include="Features\Guests\Commands\UpdateGuest\" />
+    <Folder Include="Features\Guests\Queries\GetGuests\" />
+    <Folder Include="Features\Guests\Queries\GetGuestById\" />
+    <Folder Include="Features\Guests\Queries\GetGuestAllocations\" />
+    <Folder Include="Features\Maintenance\Commands\" />
+    <Folder Include="Features\Maintenance\DTOs\" />
+    <Folder Include="Features\Maintenance\Queries\" />
+    <Folder Include="Features\Rooms\Commands\" />
+    <Folder Include="Features\Rooms\DTOs\" />
+    <Folder Include="Features\Rooms\Queries\" />
+    <Folder Include="Features\Users\Commands\" />
+    <Folder Include="Features\Users\DTOs\" />
+    <Folder Include="Features\Users\Queries\" />
+  </ItemGroup>
+
+</Project>
