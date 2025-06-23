@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GuestRoomAllocation.Application.Common.Interfaces;
+using GuestRoomAllocation.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace GuestRoomAllocation.Infrastructure
+namespace GuestRoomAllocation.Infrastructure;
+
+public static class DependencyInjection
 {
-    internal class DependencyInjection
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IDateTime, DateTimeService>();
+        services.AddScoped<INotificationService, NotificationService>();
+
+        return services;
     }
 }

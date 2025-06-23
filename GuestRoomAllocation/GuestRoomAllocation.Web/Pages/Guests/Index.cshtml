@@ -1,4 +1,93 @@
 ﻿@page
 @model GuestRoomAllocation.Web.Pages.Guests.IndexModel
 @{
+    ViewData["Title"] = "Guests";
 }
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Guests</h1>
+                <a asp-page="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Guest
+                </a>
+            </div>
+
+            @if (Model.Guests.Items.Any())
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Job Position</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var guest in Model.Guests.Items)
+                                    {
+                                        <tr>
+                                            <td>@guest.FullName</td>
+                                            <td>@guest.Email</td>
+                                            <td>@guest.Phone</td>
+                                            <td>@guest.JobPosition</td>
+                                            <td>@guest.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                <a asp-page="Edit" asp-route-id="@guest.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                <a asp-page="Delete" asp-route-id="@guest.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (Model.Guests.TotalPages > 1)
+                        {
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    @if (Model.Guests.HasPreviousPage)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-page="Index" asp-route-pageNumber="@(Model.Guests.PageNumber - 1)">Previous</a>
+                                        </li>
+                                    }
+
+                                    @for (int i = 1; i <= Model.Guests.TotalPages; i++)
+                                    {
+                                        <li class="page-item @(i == Model.Guests.PageNumber ? "active" : "")">
+                                            <a class="page-link" asp-page="Index" asp-route-pageNumber="@i">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (Model.Guests.HasNextPage)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-page="Index" asp-route-pageNumber="@(Model.Guests.PageNumber + 1)">Next</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <h4>No guests found</h4>
+                    <p>Get started by adding your first guest.</p>
+                    <a asp-page="Create" class="btn btn-primary">Add Guest</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

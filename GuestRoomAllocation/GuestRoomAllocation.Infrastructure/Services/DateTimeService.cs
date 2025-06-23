@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GuestRoomAllocation.Application.Common.Interfaces;
 
-namespace GuestRoomAllocation.Infrastructure.Services
+namespace GuestRoomAllocation.Infrastructure.Services;
+
+public class DateTimeService : IDateTime
 {
-    internal class DateTimeService
-    {
-    }
+    public DateTime Now => DateTime.Now;
+    public DateTime UtcNow => DateTime.UtcNow;
+    public DateTime Today => DateTime.Today;
 }
