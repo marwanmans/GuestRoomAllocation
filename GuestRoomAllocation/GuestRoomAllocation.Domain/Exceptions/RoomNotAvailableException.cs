@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace GuestRoomAllocation.Domain.Exceptions;
 
-namespace GuestRoomAllocation.Domain.Exceptions
+public class RoomNotAvailableException : DomainException
 {
-    internal class RoomNotAvailableException
-    {
-    }
+    public RoomNotAvailableException(int roomId, DateTime startDate, DateTime endDate)
+        : base($"Room {roomId} is not available from {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}") { }
 }

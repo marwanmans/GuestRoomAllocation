@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace GuestRoomAllocation.Domain.Exceptions;
 
-namespace GuestRoomAllocation.Domain.Exceptions
+public class InvalidDateRangeException : DomainException
 {
-    internal class InvalidDateRangeException
-    {
-    }
+    public InvalidDateRangeException(string message) : base(message) { }
 }

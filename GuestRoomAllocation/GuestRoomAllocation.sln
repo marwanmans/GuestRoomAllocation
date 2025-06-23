@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestRoomAllocation.Domain", "GuestRoomAllocation.Domain\GuestRoomAllocation.Domain.csproj", "{690A2D44-F8B9-40C1-859C-6AC77A71251F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestRoomAllocation.Application", "GuestRoomAllocation.Application\GuestRoomAllocation.Application.csproj", "{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestRoomAllocation.Infrastructure", "GuestRoomAllocation.Infrastructure\GuestRoomAllocation.Infrastructure.csproj", "{4FBF9271-979D-421A-A5D1-069B0656D0BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestRoomAllocation.Persistence", "GuestRoomAllocation.Persistence\GuestRoomAllocation.Persistence.csproj", "{15F3A8C1-C90B-4668-BD77-9CEE84D97587}"
@@ -58,6 +56,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{029F03EE-4
 		migration-guide.md = migration-guide.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestRoomAllocation.Application", "GuestRoomAllocation.Application\GuestRoomAllocation.Application.csproj", "{AB46657C-0880-43E9-B47D-5963B962C35F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,10 +68,6 @@ Global
 		{690A2D44-F8B9-40C1-859C-6AC77A71251F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{690A2D44-F8B9-40C1-859C-6AC77A71251F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{690A2D44-F8B9-40C1-859C-6AC77A71251F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FBF9271-979D-421A-A5D1-069B0656D0BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4FBF9271-979D-421A-A5D1-069B0656D0BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FBF9271-979D-421A-A5D1-069B0656D0BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -84,13 +80,16 @@ Global
 		{375E522A-92E4-4269-A2FC-4452125675D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{375E522A-92E4-4269-A2FC-4452125675D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{375E522A-92E4-4269-A2FC-4452125675D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB46657C-0880-43E9-B47D-5963B962C35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB46657C-0880-43E9-B47D-5963B962C35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB46657C-0880-43E9-B47D-5963B962C35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB46657C-0880-43E9-B47D-5963B962C35F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{690A2D44-F8B9-40C1-859C-6AC77A71251F} = {F28D3D90-D896-4D89-A08D-7D9D8C8100F0}
-		{F5F33FC8-7559-42CD-AE1D-9D6F16BC6A4A} = {F28D3D90-D896-4D89-A08D-7D9D8C8100F0}
 		{4FBF9271-979D-421A-A5D1-069B0656D0BD} = {4FD37A23-5E50-466C-832B-63A68ADD2828}
 		{15F3A8C1-C90B-4668-BD77-9CEE84D97587} = {4FD37A23-5E50-466C-832B-63A68ADD2828}
 		{375E522A-92E4-4269-A2FC-4452125675D0} = {6B46BB7F-C451-4490-AC4D-550EBAC73529}
@@ -104,6 +103,7 @@ Global
 		{6CE1DEC0-A0C2-4817-9134-D876D67D96D3} = {8AFF0F3E-3D4D-4155-A311-5BBE8B034BED}
 		{5126FA91-BBDF-4688-9ECE-96AC596A0DF2} = {6CE1DEC0-A0C2-4817-9134-D876D67D96D3}
 		{CF26ABB0-BDEE-446C-8EDF-86139BE9FA55} = {6CE1DEC0-A0C2-4817-9134-D876D67D96D3}
+		{AB46657C-0880-43E9-B47D-5963B962C35F} = {F28D3D90-D896-4D89-A08D-7D9D8C8100F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8BCCD2DE-9591-4F66-B0DA-9F24F26A8D4D}

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace GuestRoomAllocation.Application.Common.Interfaces;
 
-namespace GuestRoomAllocation.Application.Common.Interfaces
+public interface ICurrentUserService
 {
-    internal interface ICurrentUserService
-    {
-    }
+    int? UserId { get; }
+    string? Username { get; }
+    bool IsAuthenticated { get; }
+    bool IsAdmin { get; }
 }

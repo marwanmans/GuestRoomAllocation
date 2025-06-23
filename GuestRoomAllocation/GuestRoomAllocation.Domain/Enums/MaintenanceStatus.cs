@@ -1,9 +1,10 @@
 ﻿namespace GuestRoomAllocation.Domain.Enums;
 
-public enum AllocationStatus
+public enum MaintenanceStatus
 {
-    Upcoming = 1,
-    Current = 2,
+    Scheduled = 1,
+    InProgress = 2,
     Completed = 3,
     Cancelled = 4
 }
+

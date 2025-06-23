@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GuestRoomAllocation.Domain.Common;
+using GuestRoomAllocation.Domain.Entities;
 
-namespace GuestRoomAllocation.Domain.Events
+namespace GuestRoomAllocation.Domain.Events;
+
+public class AllocationCancelledEvent : DomainEvent
 {
-    internal class AllocationCancelledEvent
+    public Allocation Allocation { get; }
+
+    public AllocationCancelledEvent(Allocation allocation)
     {
+        Allocation = allocation;
     }
 }

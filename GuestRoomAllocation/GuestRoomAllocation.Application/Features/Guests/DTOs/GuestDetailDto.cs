@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace GuestRoomAllocation.Application.Features.Guests.DTOs;
 
-namespace GuestRoomAllocation.Application.Features.Guests.DTOs
+public class GuestDetailDto : GuestDto
 {
-    internal class GuestDetailDto
-    {
-    }
+    public int TotalAllocations { get; set; }
+    public int CurrentAllocations { get; set; }
+    public DateTime? LastModified { get; set; }
 }

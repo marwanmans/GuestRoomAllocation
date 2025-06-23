@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GuestRoomAllocation.Application\GuestRoomAllocation.Application.csproj" />
     <ProjectReference Include="..\GuestRoomAllocation.Infrastructure\GuestRoomAllocation.Infrastructure.csproj" />
     <ProjectReference Include="..\GuestRoomAllocation.Persistence\GuestRoomAllocation.Persistence.csproj" />
   </ItemGroup>

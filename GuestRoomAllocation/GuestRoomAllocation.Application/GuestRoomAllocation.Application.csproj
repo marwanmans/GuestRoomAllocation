@@ -1,33 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GuestRoomAllocation.Domain\GuestRoomAllocation.Domain.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="12.0.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+		<PackageReference Include="FluentValidation" Version="11.8.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
+		<PackageReference Include="MediatR" Version="12.2.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Allocations\Commands\" />
-    <Folder Include="Features\Allocations\DTOs\" />
-    <Folder Include="Features\Allocations\Queries\" />
-    <Folder Include="Features\Guests\Commands\DeleteGuest\" />
-    <Folder Include="Features\Guests\Commands\UpdateGuest\" />
-    <Folder Include="Features\Guests\Queries\GetGuests\" />
-    <Folder Include="Features\Guests\Queries\GetGuestById\" />
-    <Folder Include="Features\Guests\Queries\GetGuestAllocations\" />
-    <Folder Include="Features\Maintenance\Commands\" />
-    <Folder Include="Features\Maintenance\DTOs\" />
-    <Folder Include="Features\Maintenance\Queries\" />
-    <Folder Include="Features\Rooms\Commands\" />
-    <Folder Include="Features\Rooms\DTOs\" />
-    <Folder Include="Features\Rooms\Queries\" />
-    <Folder Include="Features\Users\Commands\" />
-    <Folder Include="Features\Users\DTOs\" />
-    <Folder Include="Features\Users\Queries\" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\GuestRoomAllocation.Domain\GuestRoomAllocation.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Features\Guests\CreateGuest\" />
+	  <Folder Include="Features\Guests\GetGuests\" />
+	  <Folder Include="Features\Guests\GetGuestById\" />
+	</ItemGroup>
 
 </Project>
