@@ -49,12 +49,18 @@ namespace GuestRoomAllocation.Web.Pages.Apartments
                     Command.OverallSpace
                 );
 
-                // Set optional properties directly (assuming they are public properties)
-                apartment.MapLocation = Command.MapLocation;
-                apartment.CommonAreas = Command.CommonAreas;
-                apartment.Facilities = Command.Facilities;
-                apartment.Amenities = Command.Amenities;
-                apartment.HasLaundry = Command.HasLaundry;
+                // Use UpdateDetails method to set optional properties
+                apartment.UpdateDetails(
+                    Command.Name,
+                    address,
+                    Command.TotalBathrooms,
+                    Command.OverallSpace,
+                    Command.MapLocation,
+                    Command.CommonAreas,
+                    Command.Facilities,
+                    Command.Amenities,
+                    Command.HasLaundry
+                );
 
                 _context.Apartments.Add(apartment);
                 await _context.SaveChangesAsync();
@@ -62,9 +68,14 @@ namespace GuestRoomAllocation.Web.Pages.Apartments
                 TempData["Success"] = "Apartment created successfully!";
                 return RedirectToPage("./Index");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while creating the apartment.");
+                // Show detailed error for debugging
+                ModelState.AddModelError("", $"Error: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    ModelState.AddModelError("", $"Inner Error: {ex.InnerException.Message}");
+                }
                 return Page();
             }
         }

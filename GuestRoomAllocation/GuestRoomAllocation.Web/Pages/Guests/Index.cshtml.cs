@@ -1,31 +1,35 @@
-using MediatR;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using GuestRoomAllocation.Application.Features.Guests.Queries.GetGuests;
-using GuestRoomAllocation.Application.Features.Guests.DTOs;
-using GuestRoomAllocation.Application.Common.Models;
+using Microsoft.EntityFrameworkCore;
+using GuestRoomAllocation.Persistence;
+using GuestRoomAllocation.Domain.Entities;
 
-namespace GuestRoomAllocation.Web.Pages.Guests;
-
-public class IndexModel : PageModel
+namespace GuestRoomAllocation.Web.Pages.Guests
 {
-    private readonly IMediator _mediator;
-
-    public IndexModel(IMediator mediator)
+    public class IndexModel : PageModel
     {
-        _mediator = mediator;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public PaginatedList<GuestDto> Guests { get; set; } = null!;
-
-    public async Task OnGetAsync(int pageNumber = 1, string? searchTerm = null)
-    {
-        var query = new GetGuestsQuery
+        public IndexModel(ApplicationDbContext context)
         {
-            PageNumber = pageNumber,
-            PageSize = 10,
-            SearchTerm = searchTerm
-        };
+            _context = context;
+        }
 
-        Guests = await _mediator.Send(query);
+        public IList<Guest> Guests { get; set; } = default!;
+
+        public async Task OnGetAsync()
+        {
+            try
+            {
+                Guests = await _context.Guests
+                    .OrderBy(g => g.LastName)
+                    .ThenBy(g => g.FirstName)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Guests = new List<Guest>();
+                Console.WriteLine($"Error loading guests: {ex.Message}");
+            }
+        }
     }
 }

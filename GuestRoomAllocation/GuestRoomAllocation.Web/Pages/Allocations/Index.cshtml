@@ -1,0 +1,327 @@
+﻿@page
+@model GuestRoomAllocation.Web.Pages.Allocations.IndexModel
+@{
+    ViewData["Title"] = "Allocations";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-calendar-alt me-2 text-primary"></i>Allocation Management
+                </h1>
+                <p class="text-muted">Manage guest room assignments and stays</p>
+            </div>
+            <div>
+                <a asp-page="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Allocation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-bed text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title mb-1">Current Stays</h6>
+                        <h4 class="mb-0">@Model.CurrentAllocations.Count</h4>
+                        <small class="text-muted">Active now</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-clock text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title mb-1">Upcoming</h6>
+                        <h4 class="mb-0">@Model.UpcomingAllocations.Count</h4>
+                        <small class="text-muted">Future bookings</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-history text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title mb-1">Recent</h6>
+                        <h4 class="mb-0">@Model.RecentAllocations.Count</h4>
+                        <small class="text-muted">Past/cancelled</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input asp-for="SearchTerm" class="form-control" placeholder="Guest name, email, room..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Apartment</label>
+                <select asp-for="ApartmentFilter" class="form-select">
+                    <option value="">All Apartments</option>
+                    @foreach (var apartment in Model.Apartments)
+                    {
+                        <option value="@apartment.Id">@apartment.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select asp-for="StatusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Current">Current</option>
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Current Allocations -->
+@if (Model.CurrentAllocations.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-bed me-2 text-success"></i>Current Stays (@Model.CurrentAllocations.Count)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @foreach (var allocation in Model.CurrentAllocations)
+                {
+                    <div class="col-lg-6">
+                        <div class="card border-success h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="card-title mb-1">
+                                            @allocation.Guest.FirstName @allocation.Guest.LastName
+                                        </h6>
+                                        <small class="text-muted">@allocation.Guest.ContactInfo.Email</small>
+                                    </div>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Room</small>
+                                        <span class="fw-bold">@allocation.Room.Apartment.Name - @allocation.Room.RoomNumber</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Duration</small>
+                                        <span>@allocation.Duration day(s)</span>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Check-in</small>
+                                        <span>@allocation.DateRange.StartDate.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Check-out</small>
+                                        <span>@allocation.DateRange.EndDate.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(allocation.Notes))
+                                {
+                                    <div class="border-top pt-2">
+                                        <small class="text-muted d-block">Notes</small>
+                                        <span class="small">@allocation.Notes</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <div class="d-flex gap-2">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Upcoming Allocations -->
+@if (Model.UpcomingAllocations.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-clock me-2 text-info"></i>Upcoming Stays (@Model.UpcomingAllocations.Count)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @foreach (var allocation in Model.UpcomingAllocations.Take(6))
+                {
+                    <div class="col-lg-4">
+                        <div class="card border-info h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="card-title mb-1">
+                                            @allocation.Guest.FirstName @allocation.Guest.LastName
+                                        </h6>
+                                        <small class="text-muted">@allocation.Room.Apartment.Name - @allocation.Room.RoomNumber</small>
+                                    </div>
+                                    <span class="badge bg-info">Upcoming</span>
+                                </div>
+
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">Dates</small>
+                                    <span class="small">
+                                        @allocation.DateRange.StartDate.ToString("MMM dd") -
+                                        @allocation.DateRange.EndDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                </div>
+
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">Starts in</small>
+                                    <span class="small">
+                                        @((allocation.DateRange.StartDate - DateTime.Today).Days) day(s)
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <div class="d-flex gap-2">
+                                    <a href="#" class="btn btn-sm btn-outline-primary flex-fill">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @if (Model.UpcomingAllocations.Count > 6)
+            {
+                <div class="text-center mt-3">
+                    <span class="text-muted">Showing 6 of @Model.UpcomingAllocations.Count upcoming allocations</span>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Recent Allocations -->
+@if (Model.RecentAllocations.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-history me-2 text-warning"></i>Recent Activity
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Dates</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var allocation in Model.RecentAllocations)
+                        {
+                            <tr>
+                                <td>
+                                    <div>
+                                        <span class="fw-bold">@allocation.Guest.FirstName @allocation.Guest.LastName</span><br>
+                                        <small class="text-muted">@allocation.Guest.ContactInfo.Email</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span>@allocation.Room.Apartment.Name</span><br>
+                                    <small class="text-muted">Room @allocation.Room.RoomNumber</small>
+                                </td>
+                                <td class="small">
+                                    @allocation.DateRange.StartDate.ToString("MMM dd") -
+                                    @allocation.DateRange.EndDate.ToString("MMM dd, yyyy")
+                                </td>
+                                <td>
+                                    @if (allocation.Status == GuestRoomAllocation.Domain.Enums.AllocationStatus.Cancelled)
+                                    {
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Completed</span>
+                                    }
+                                </td>
+                                <td>@allocation.Duration day(s)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!Model.CurrentAllocations.Any() && !Model.UpcomingAllocations.Any() && !Model.RecentAllocations.Any())
+{
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-calendar-alt text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted mb-3">No Allocations Found</h4>
+        <p class="text-muted mb-4">Start by creating your first guest room allocation.</p>
+        <a asp-page="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create First Allocation
+        </a>
+    </div>
+}

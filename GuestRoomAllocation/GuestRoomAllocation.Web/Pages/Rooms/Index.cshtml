@@ -1,0 +1,179 @@
+﻿@page
+@model GuestRoomAllocation.Web.Pages.Rooms.IndexModel
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-door-open me-2 text-primary"></i>Room Management
+                </h1>
+                <p class="text-muted">Manage all rooms across your apartments</p>
+            </div>
+            <div>
+                <a asp-page="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add New Room
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ApartmentsWithRooms.Any())
+{
+    @foreach (var apartment in Model.ApartmentsWithRooms)
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <i class="fas fa-building me-2 text-secondary"></i>@apartment.Name
+                        </h5>
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            @apartment.Address.Street, @apartment.Address.City
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">@apartment.Rooms.Count Room(s)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (apartment.Rooms.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var room in apartment.Rooms.OrderBy(r => r.RoomNumber))
+                        {
+                            var isOccupied = room.Allocations.Any();
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card border @(isOccupied ? "border-warning" : "border-success") h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h6 class="card-title mb-1">
+                                                    Room @room.RoomNumber
+                                                </h6>
+                                                <span class="badge @(isOccupied ? "bg-warning" : "bg-success")">
+                                                    @(isOccupied ? "Occupied" : "Available")
+                                                </span>
+                                            </div>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                                    <li><a class="dropdown-item text-danger" asp-page="Delete" asp-route-id="@room.Id"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <div class="text-center p-2 bg-light rounded">
+                                                    <div class="fw-bold text-info">@room.Size</div>
+                                                    <small class="text-muted">sq ft</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-center p-2 bg-light rounded">
+                                                    <div class="fw-bold text-primary">@room.MaxOccupancy</div>
+                                                    <small class="text-muted">Max guests</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            @if (room.HasPrivateBathroom)
+                                            {
+                                                <span class="badge bg-success me-2">
+                                                    <i class="fas fa-bath me-1"></i>Private Bath
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary me-2">
+                                                    <i class="fas fa-bath me-1"></i>Shared Bath
+                                                </span>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrEmpty(room.Description))
+                                        {
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Description</small>
+                                                <span class="small">@room.Description</span>
+                                            </div>
+                                        }
+
+                                        @if (isOccupied)
+                                        {
+                                            var currentAllocation = room.Allocations.First();
+                                            <div class="border-top pt-3">
+                                                <small class="text-muted d-block mb-1">Current Guest</small>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="small fw-bold">@currentAllocation.Guest.FirstName @currentAllocation.Guest.LastName</span>
+                                                    <small class="text-muted">
+                                                        Until @currentAllocation.DateRange.EndDate.ToString("MMM dd")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="card-footer bg-transparent border-0 pt-0">
+                                        <div class="d-flex gap-2">
+                                            @if (!isOccupied)
+                                            {
+                                                <a href="#" class="btn btn-sm btn-outline-primary flex-fill">
+                                                    <i class="fas fa-plus me-1"></i>Assign Guest
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="#" class="btn btn-sm btn-outline-info flex-fill">
+                                                    <i class="fas fa-eye me-1"></i>View Allocation
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-door-open text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h6 class="text-muted">No rooms in this apartment</h6>
+                        <p class="text-muted small mb-3">Add rooms to start managing guest allocations.</p>
+                        <a asp-page="Create" asp-route-apartmentId="@apartment.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Add First Room
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-building text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted mb-3">No Apartments Found</h4>
+        <p class="text-muted mb-4">You need to create apartments before you can add rooms.</p>
+        <a asp-page="/Apartments/Create" class="btn btn-primary me-2">
+            <i class="fas fa-building me-2"></i>Create Apartment First
+        </a>
+        <a asp-page="/Apartments/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-2"></i>View Apartments
+        </a>
+    </div>
+}

@@ -1,0 +1,193 @@
+﻿@page
+@model GuestRoomAllocation.Web.Pages.Rooms.CreateModel
+@{
+    ViewData["Title"] = "Create Room";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-door-open me-2 text-primary"></i>Add New Room
+                </h1>
+                <p class="text-muted">Create a new room in an existing apartment</p>
+            </div>
+            <div>
+                <a asp-page="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Rooms
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>Room Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Apartment Selection -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-building me-2 text-secondary"></i>Apartment Assignment
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Command.ApartmentId" class="form-label fw-bold">Select Apartment</label>
+                                <select asp-for="Command.ApartmentId" asp-items="Model.ApartmentOptions" class="form-select">
+                                    <option value="">-- Choose an apartment --</option>
+                                </select>
+                                <span asp-validation-for="Command.ApartmentId" class="text-danger"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    The room will be added to the selected apartment
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Room Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-door-open me-2 text-info"></i>Basic Information
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Command.RoomNumber" class="form-label">Room Number</label>
+                                <input asp-for="Command.RoomNumber" class="form-control" placeholder="e.g., 101, A1, Master" />
+                                <span asp-validation-for="Command.RoomNumber" class="text-danger"></span>
+                                <div class="form-text">Must be unique within the apartment</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Command.Size" class="form-label">Size (sq ft)</label>
+                                <input asp-for="Command.Size" type="number" min="50" max="2000" class="form-control" />
+                                <span asp-validation-for="Command.Size" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Occupancy and Amenities -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-users me-2 text-success"></i>Occupancy & Amenities
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Command.MaxOccupancy" class="form-label">Maximum Occupancy</label>
+                                <select asp-for="Command.MaxOccupancy" class="form-select">
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                    <option value="5">5 Guests</option>
+                                    <option value="6">6 Guests</option>
+                                </select>
+                                <span asp-validation-for="Command.MaxOccupancy" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input asp-for="Command.HasPrivateBathroom" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Command.HasPrivateBathroom" class="form-check-label">
+                                        <i class="fas fa-bath me-1"></i>Has Private Bathroom
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-file-alt me-2 text-warning"></i>Additional Details
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Command.Description" class="form-label">Description (Optional)</label>
+                                <textarea asp-for="Command.Description" class="form-control" rows="3"
+                                          placeholder="e.g., Corner room with city view, Queen bed, desk area..."></textarea>
+                                <span asp-validation-for="Command.Description" class="text-danger"></span>
+                                <div class="form-text">
+                                    Describe special features, furnishings, or characteristics of this room
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Room
+                        </button>
+                        <a asp-page="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="mb-3">
+                        <strong>Room Numbers:</strong>
+                        <ul class="mt-1 mb-0">
+                            <li>Use consistent numbering (101, 102, 103)</li>
+                            <li>Or descriptive names (Master, Guest Room)</li>
+                            <li>Must be unique within each apartment</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Size Guidelines:</strong>
+                        <ul class="mt-1 mb-0">
+                            <li>Single room: 80-120 sq ft</li>
+                            <li>Double room: 120-200 sq ft</li>
+                            <li>Master bedroom: 200+ sq ft</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong>Bathroom Types:</strong>
+                        <ul class="mt-1 mb-0">
+                            <li>Private: Dedicated to this room only</li>
+                            <li>Shared: Used by multiple rooms/guests</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-link me-2 text-info"></i>Quick Links
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-page="/Apartments/Index" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-building me-2"></i>View Apartments
+                    </a>
+                    <a asp-page="/Apartments/Create" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Apartment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
