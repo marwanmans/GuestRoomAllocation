@@ -53,12 +53,12 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
         builder.HasMany(e => e.Rooms)
             .WithOne(r => r.Apartment)
             .HasForeignKey(r => r.ApartmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(e => e.MaintenancePeriods)
             .WithOne(m => m.Apartment)
             .HasForeignKey(m => m.ApartmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(e => e.DomainEvents);
     }

@@ -35,6 +35,17 @@ public class MaintenancePeriodConfiguration : IEntityTypeConfiguration<Maintenan
                 .HasColumnName("EndDate");
         });
 
+        // Fix the foreign key relationships to prevent cascade conflicts
+        builder.HasOne(e => e.Apartment)
+            .WithMany(a => a.MaintenancePeriods)
+            .HasForeignKey(e => e.ApartmentId)
+            .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade to SetNull
+
+        builder.HasOne(e => e.Room)
+            .WithMany(r => r.MaintenancePeriods)
+            .HasForeignKey(e => e.RoomId)
+            .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade to SetNull
+
         builder.Ignore(e => e.DomainEvents);
     }
 }

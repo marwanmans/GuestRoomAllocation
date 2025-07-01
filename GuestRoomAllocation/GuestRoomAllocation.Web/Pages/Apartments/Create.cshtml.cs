@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using GuestRoomAllocation.Persistence;
 using GuestRoomAllocation.Domain.Entities;
 using GuestRoomAllocation.Domain.ValueObjects;
@@ -29,6 +30,31 @@ namespace GuestRoomAllocation.Web.Pages.Apartments
         {
             if (!ModelState.IsValid)
             {
+                return Page();
+            }
+
+            // DEBUG: Add this debugging section
+            try
+            {
+                var connectionString = _context.Database.GetDbConnection().ConnectionString;
+                var databaseName = _context.Database.GetDbConnection().Database;
+
+                // This will appear in the Output window
+                System.Diagnostics.Debug.WriteLine($"Connection String: {connectionString}");
+                System.Diagnostics.Debug.WriteLine($"Database Name: {databaseName}");
+
+                // Test if we can see the Apartments table
+                var canSeeTable = await _context.Database.CanConnectAsync();
+                System.Diagnostics.Debug.WriteLine($"Can connect to database: {canSeeTable}");
+
+                // Try to count apartments (this will fail if table doesn't exist)
+                var apartmentCount = await _context.Apartments.CountAsync();
+                System.Diagnostics.Debug.WriteLine($"Current apartment count: {apartmentCount}");
+            }
+            catch (Exception debugEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"Debug error: {debugEx.Message}");
+                ModelState.AddModelError("", $"Debug info: {debugEx.Message}");
                 return Page();
             }
 

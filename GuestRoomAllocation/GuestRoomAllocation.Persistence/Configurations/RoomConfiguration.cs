@@ -28,7 +28,7 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.HasMany(e => e.MaintenancePeriods)
             .WithOne(m => m.Room)
             .HasForeignKey(m => m.RoomId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(e => e.DomainEvents);
     }

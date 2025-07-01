@@ -23,4 +23,8 @@
 		<ProjectReference Include="..\GuestRoomAllocation.Application\GuestRoomAllocation.Application.csproj" />
 		<ProjectReference Include="..\GuestRoomAllocation.Domain\GuestRoomAllocation.Domain.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>

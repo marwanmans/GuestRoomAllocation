@@ -388,12 +388,12 @@ namespace GuestRoomAllocation.Persistence.Migrations
                     b.HasOne("GuestRoomAllocation.Domain.Entities.Apartment", "Apartment")
                         .WithMany("MaintenancePeriods")
                         .HasForeignKey("ApartmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("GuestRoomAllocation.Domain.Entities.Room", "Room")
                         .WithMany("MaintenancePeriods")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.OwnsOne("GuestRoomAllocation.Domain.ValueObjects.DateRange", "DateRange", b1 =>
                         {
@@ -429,7 +429,7 @@ namespace GuestRoomAllocation.Persistence.Migrations
                     b.HasOne("GuestRoomAllocation.Domain.Entities.Apartment", "Apartment")
                         .WithMany("Rooms")
                         .HasForeignKey("ApartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Apartment");
