@@ -2,46 +2,270 @@
 @model GuestRoomAllocation.Web.Pages.Apartments.IndexModel
 @{
     ViewData["Title"] = "Apartments";
+    ViewData["Subtitle"] = "Manage apartment properties and details";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h2 mb-1">
-                    <i class="fas fa-building me-2 text-primary"></i>Apartment Management
-                </h1>
-                <p class="text-muted">Manage apartment properties and details</p>
-            </div>
-            <div>
-                <a asp-page="Create" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add New Apartment
-                </a>
-            </div>
-        </div>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        transition: all 0.15s ease;
+        height: 100%;
+    }
+
+        .card-minimal:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transform: translateY(-1px);
+        }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    .card-footer-minimal {
+        padding: 16px 24px;
+        background: var(--gray-50);
+        border-top: 1px solid var(--gray-200);
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-ghost {
+        background: transparent;
+        color: var(--gray-500);
+        border: none;
+        padding: 8px;
+        border-radius: 6px;
+    }
+
+        .btn-ghost:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+    /* Grid Layout */
+    .apartments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+    }
+
+    /* Apartment Cards */
+    .apartment-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .apartment-address {
+        color: var(--gray-600);
+        font-size: 14px;
+        margin-bottom: 16px;
+        line-height: 1.4;
+    }
+
+    .apartment-stats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    /* Status Badges */
+    .badge-minimal {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+    }
+
+    .badge-primary {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-secondary {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        background: var(--gray-100);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .empty-description {
+        color: var(--gray-500);
+        margin-bottom: 32px;
+        font-size: 16px;
+    }
+
+    /* Actions */
+    .apartment-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .created-date {
+        color: var(--gray-500);
+        font-size: 13px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+
+        .apartments-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .apartment-stats {
+            margin-bottom: 12px;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">Apartments</h1>
+        <p class="page-subtitle">Manage apartment properties and details</p>
     </div>
+    <a asp-page="Create" class="btn-minimal btn-primary-minimal">
+        <i class="fas fa-plus"></i>
+        Add Apartment
+    </a>
 </div>
 
+<!-- Content -->
 @if (Model.Apartments.Any())
 {
-    <div class="row g-3">
+    <div class="apartments-grid">
         @foreach (var apartment in Model.Apartments)
         {
-            <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@apartment.Name</h5>
-                        <p class="text-muted small">
-                            @apartment.Address.Street<br>
-                            @apartment.Address.City, @apartment.Address.Country
-                        </p>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-info">@apartment.TotalBathrooms Bathrooms</span>
-                            <span class="badge bg-secondary">@apartment.OverallSpace m²</span>
-                        </div>
+            <div class="card-minimal">
+                <div class="card-body-minimal">
+                    <h3 class="apartment-title">@apartment.Name</h3>
+                    <div class="apartment-address">
+                        <i class="fas fa-map-marker-alt" style="color: var(--gray-400); margin-right: 6px;"></i>
+                        @apartment.Address.Street<br>
+                        @apartment.Address.City, @apartment.Address.Country
                     </div>
-                    <div class="card-footer bg-transparent">
-                        <small class="text-muted">Created @apartment.CreatedDate.ToString("MMM dd, yyyy")</small>
+
+                    <div class="apartment-stats">
+                        <span class="badge-minimal badge-primary">
+                            <i class="fas fa-bath" style="margin-right: 4px;"></i>
+                            @apartment.TotalBathrooms Bath@(apartment.TotalBathrooms != 1 ? "s" : "")
+                        </span>
+                        <span class="badge-minimal badge-secondary">
+                            <i class="fas fa-expand-arrows-alt" style="margin-right: 4px;"></i>
+                            @apartment.OverallSpace m²
+                        </span>
+                    </div>
+
+                    <div class="apartment-actions">
+                        <a asp-page="/Rooms/Index" asp-route-apartmentId="@apartment.Id" class="btn-ghost" title="View Rooms">
+                            <i class="fas fa-door-open"></i>
+                        </a>
+                        <button class="btn-ghost" title="Edit" onclick="editApartment('@apartment.Id')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-ghost" title="Delete" style="color: var(--danger);"
+                                onclick="confirmDelete('@apartment.Id', '@apartment.Name')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer-minimal">
+                    <div class="created-date">
+                        Created @apartment.CreatedDate.ToString("MMM dd, yyyy")
                     </div>
                 </div>
             </div>
@@ -50,14 +274,32 @@
 }
 else
 {
-    <div class="text-center py-5">
-        <div class="mb-4">
-            <i class="fas fa-building text-muted" style="font-size: 4rem;"></i>
+    <div class="card-minimal">
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-building" style="color: var(--gray-400); font-size: 24px;"></i>
+            </div>
+            <h3 class="empty-title">No apartments yet</h3>
+            <p class="empty-description">Get started by adding your first apartment property to the system.</p>
+            <a asp-page="Create" class="btn-minimal btn-primary-minimal">
+                <i class="fas fa-plus"></i>
+                Add First Apartment
+            </a>
         </div>
-        <h4 class="text-muted mb-3">No Apartments Found</h4>
-        <p class="text-muted mb-4">Get started by adding your first apartment to the system.</p>
-        <a asp-page="Create" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add First Apartment
-        </a>
     </div>
 }
+
+<script>
+    function editApartment(apartmentId) {
+        // Navigate to edit page when implemented
+        console.log('Edit apartment:', apartmentId);
+        // window.location.href = `/Apartments/Edit/${apartmentId}`;
+    }
+
+    function confirmDelete(apartmentId, apartmentName) {
+        if (confirm(`Are you sure you want to delete "${apartmentName}"? This action cannot be undone.`)) {
+            // Handle delete - you can implement this with a form or AJAX call
+            console.log('Delete apartment:', apartmentId);
+        }
+    }
+</script>

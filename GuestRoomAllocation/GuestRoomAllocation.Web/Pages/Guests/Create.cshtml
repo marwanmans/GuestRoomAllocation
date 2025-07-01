@@ -1,68 +1,294 @@
 ﻿@page
 @model GuestRoomAllocation.Web.Pages.Guests.CreateModel
 @{
-    ViewData["Title"] = "Create Guest";
+    ViewData["Title"] = "Add Guest";
+    ViewData["Subtitle"] = "Create a new guest profile with contact information";
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <h1 class="h2 mb-4">Create Guest</h1>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --danger: #ef4444;
+    }
 
+    /* Content Area */
+    .content-area-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-minimal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-item {
+        color: var(--gray-500);
+        text-decoration: none;
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--gray-700);
+        }
+
+    .breadcrumb-separator {
+        color: var(--gray-300);
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s ease;
+        background: white;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary-minimal {
+        background: white;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+        .btn-secondary-minimal:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+            text-decoration: none;
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 32px;
+    }
+
+    /* Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="content-area-form">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-minimal">
+        <a asp-page="Index" class="breadcrumb-item">Guests</a>
+        <span class="breadcrumb-separator">/</span>
+        <span style="color: var(--gray-900);">Add Guest</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Add Guest</h1>
+        <p class="page-subtitle">Create a new guest profile with contact information</p>
+    </div>
+
+    <!-- Form -->
+    <div class="card-minimal">
+        <div class="card-body-minimal">
             <form method="post">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label asp-for="Command.FirstName" class="form-label"></label>
-                                    <input asp-for="Command.FirstName" class="form-control" />
-                                    <span asp-validation-for="Command.FirstName" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label asp-for="Command.LastName" class="form-label"></label>
-                                    <input asp-for="Command.LastName" class="form-control" />
-                                    <span asp-validation-for="Command.LastName" class="text-danger"></span>
-                                </div>
-                            </div>
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Command.FirstName" class="form-label">First Name *</label>
+                            <input asp-for="Command.FirstName" class="form-input" placeholder="Enter first name" />
+                            <span asp-validation-for="Command.FirstName" class="form-error"></span>
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label asp-for="Command.Email" class="form-label"></label>
-                                    <input asp-for="Command.Email" type="email" class="form-control" />
-                                    <span asp-validation-for="Command.Email" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label asp-for="Command.Phone" class="form-label"></label>
-                                    <input asp-for="Command.Phone" class="form-control" />
-                                    <span asp-validation-for="Command.Phone" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Command.JobPosition" class="form-label"></label>
-                            <input asp-for="Command.JobPosition" class="form-control" />
-                            <span asp-validation-for="Command.JobPosition" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Command.Notes" class="form-label"></label>
-                            <textarea asp-for="Command.Notes" class="form-control" rows="3"></textarea>
-                            <span asp-validation-for="Command.Notes" class="text-danger"></span>
+                        <div class="form-group">
+                            <label asp-for="Command.LastName" class="form-label">Last Name *</label>
+                            <input asp-for="Command.LastName" class="form-input" placeholder="Enter last name" />
+                            <span asp-validation-for="Command.LastName" class="form-error"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Create Guest</button>
-                    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Contact Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Command.Email" class="form-label">Email Address *</label>
+                            <input asp-for="Command.Email" type="email" class="form-input" placeholder="guest@example.com" />
+                            <span asp-validation-for="Command.Email" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Command.Phone" class="form-label">Phone Number</label>
+                            <input asp-for="Command.Phone" class="form-input" placeholder="+1 (555) 123-4567" />
+                            <span asp-validation-for="Command.Phone" class="form-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Additional Information</h3>
+                    <div class="form-group">
+                        <label asp-for="Command.JobPosition" class="form-label">Job Position</label>
+                        <input asp-for="Command.JobPosition" class="form-input" placeholder="e.g., Software Engineer, Manager" />
+                        <span asp-validation-for="Command.JobPosition" class="form-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Command.Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Command.Notes" class="form-input form-textarea" placeholder="Any additional notes or special requirements..."></textarea>
+                        <span asp-validation-for="Command.Notes" class="form-error"></span>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-minimal btn-primary-minimal">
+                        <i class="fas fa-check"></i>
+                        Create Guest
+                    </button>
+                    <a asp-page="Index" class="btn-minimal btn-secondary-minimal">
+                        Cancel
+                    </a>
                 </div>
             </form>
         </div>

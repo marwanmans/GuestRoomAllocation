@@ -2,171 +2,543 @@
 @model GuestRoomAllocation.Web.Pages.Maintenance.CreateModel
 @{
     ViewData["Title"] = "Schedule Maintenance";
+    ViewData["Subtitle"] = "Plan maintenance activities for apartments and rooms";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h2 mb-1">
-                    <i class="fas fa-plus me-2 text-success"></i>Schedule Maintenance
-                </h1>
-                <p class="text-muted">Plan maintenance activities for apartments and rooms</p>
-            </div>
-            <div>
-                <a asp-page="Index" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Maintenance
-                </a>
-            </div>
-        </div>
-    </div>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --danger: #ef4444;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --info: #0ea5e9;
+    }
+
+    /* Layout */
+    .layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 32px;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-minimal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-item {
+        color: var(--gray-500);
+        text-decoration: none;
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--gray-700);
+        }
+
+    .breadcrumb-separator {
+        color: var(--gray-300);
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        height: fit-content;
+    }
+
+    .card-header-minimal {
+        padding: 20px 24px;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    .card-title-minimal {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s ease;
+        background: white;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .form-help {
+        color: var(--gray-500);
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    /* Select */
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.15s ease;
+    }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-select:disabled {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+    /* Radio Buttons */
+    .radio-group {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 20px;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .radio-option input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+    .radio-label {
+        color: var(--gray-700);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary-minimal {
+        background: white;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+        .btn-secondary-minimal:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+            text-decoration: none;
+        }
+
+    .btn-small {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 32px;
+    }
+
+    /* Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    /* Selection Info */
+    .selection-info {
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-top: 16px;
+        color: #1e40af;
+        font-size: 14px;
+        display: none;
+    }
+
+    /* Quick Links */
+    .quick-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Sidebar Lists */
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+    }
+
+        .sidebar-list li {
+            color: var(--gray-600);
+            font-size: 13px;
+            margin-bottom: 6px;
+            padding-left: 16px;
+            position: relative;
+        }
+
+            .sidebar-list li:before {
+                content: "•";
+                color: var(--gray-400);
+                position: absolute;
+                left: 0;
+            }
+
+        .sidebar-list strong {
+            color: var(--gray-700);
+        }
+
+    .sidebar-section {
+        margin-bottom: 20px;
+    }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+    .sidebar-strong {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 8px;
+        display: block;
+        font-size: 14px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .layout-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .radio-group {
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-minimal">
+    <a asp-page="Index" class="breadcrumb-item">Maintenance</a>
+    <span class="breadcrumb-separator">/</span>
+    <span style="color: var(--gray-900);">Schedule Maintenance</span>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <form method="post">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-tools me-2 text-primary"></i>Maintenance Details
-                    </h5>
-                </div>
-                <div class="card-body">
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Schedule Maintenance</h1>
+    <p class="page-subtitle">Plan maintenance activities for apartments and rooms</p>
+</div>
+
+<div class="layout-grid">
+    <!-- Main Form -->
+    <div>
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h2 class="card-title-minimal">
+                    <i class="fas fa-tools" style="color: var(--primary);"></i>
+                    Maintenance Details
+                </h2>
+            </div>
+            <div class="card-body-minimal">
+                <form method="post" id="maintenanceForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
                     <!-- Target Selection -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-target me-2 text-info"></i>Maintenance Target
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="Command.TargetType" id="targetApartment" value="Apartment" checked>
-                                    <label class="form-check-label" for="targetApartment">
-                                        <i class="fas fa-building me-1"></i>Entire Apartment
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="Command.TargetType" id="targetRoom" value="Room">
-                                    <label class="form-check-label" for="targetRoom">
-                                        <i class="fas fa-door-open me-1"></i>Specific Room
-                                    </label>
-                                </div>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-crosshairs" style="color: var(--info);"></i>
+                            Maintenance Target
+                        </h3>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" name="Command.TargetType" id="targetApartment" value="Apartment" checked />
+                                <label class="radio-label" for="targetApartment">
+                                    <i class="fas fa-building"></i>
+                                    Entire Apartment
+                                </label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="Command.TargetType" id="targetRoom" value="Room" />
+                                <label class="radio-label" for="targetRoom">
+                                    <i class="fas fa-door-open"></i>
+                                    Specific Room
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Apartment Selection -->
-                    <div class="mb-4" id="apartmentSelection">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.ApartmentId" class="form-label">Select Apartment</label>
+                    <!-- Location Selection -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-map-marker-alt" style="color: var(--success);"></i>
+                            Location
+                        </h3>
+                        <div id="apartmentSelection">
+                            <div class="form-group">
+                                <label asp-for="Command.ApartmentId" class="form-label">Select Apartment *</label>
                                 <select asp-for="Command.ApartmentId" asp-items="Model.ApartmentOptions" class="form-select">
                                     <option value="">-- Choose an apartment --</option>
                                 </select>
-                                <span asp-validation-for="Command.ApartmentId" class="text-danger"></span>
+                                <span asp-validation-for="Command.ApartmentId" class="form-error"></span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Room Selection (Hidden by default) -->
-                    <div class="mb-4" id="roomSelection" style="display: none;">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.RoomId" class="form-label">Select Room</label>
-                                <select asp-for="Command.RoomId" class="form-select">
+                        <div id="roomSelection" style="display: none;">
+                            <div class="form-group">
+                                <label asp-for="Command.RoomId" class="form-label">Select Room *</label>
+                                <select asp-for="Command.RoomId" class="form-select" disabled>
                                     <option value="">-- Choose a room --</option>
                                 </select>
-                                <span asp-validation-for="Command.RoomId" class="text-danger"></span>
+                                <span asp-validation-for="Command.RoomId" class="form-error"></span>
                             </div>
                         </div>
+                        <div id="selectionInfo" class="selection-info"></div>
                     </div>
 
-                    <!-- Category and Description -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-info-circle me-2 text-primary"></i>Maintenance Information
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="Command.Category" class="form-label">Category</label>
+                    <!-- Maintenance Information -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-info-circle" style="color: var(--warning);"></i>
+                            Maintenance Information
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="Command.Category" class="form-label">Category *</label>
                                 <select asp-for="Command.Category" asp-items="Model.CategoryOptions" class="form-select">
                                     <option value="">-- Select category --</option>
                                 </select>
-                                <span asp-validation-for="Command.Category" class="text-danger"></span>
+                                <span asp-validation-for="Command.Category" class="form-error"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.Priority" class="form-label">Priority</label>
+                            <div class="form-group">
+                                <label asp-for="Command.Priority" class="form-label">Priority *</label>
                                 <select asp-for="Command.Priority" class="form-select">
                                     <option value="Low">Low</option>
                                     <option value="Medium" selected>Medium</option>
                                     <option value="High">High</option>
                                     <option value="Urgent">Urgent</option>
                                 </select>
+                                <span asp-validation-for="Command.Priority" class="form-error"></span>
                             </div>
-                            <div class="col-12">
-                                <label asp-for="Command.Description" class="form-label">Description</label>
-                                <textarea asp-for="Command.Description" class="form-control" rows="3" placeholder="Describe the maintenance work needed..."></textarea>
-                                <span asp-validation-for="Command.Description" class="text-danger"></span>
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Command.Description" class="form-label">Description *</label>
+                            <textarea asp-for="Command.Description" class="form-input form-textarea" placeholder="Describe the maintenance work needed..."></textarea>
+                            <span asp-validation-for="Command.Description" class="form-error"></span>
                         </div>
                     </div>
 
                     <!-- Schedule -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-calendar-alt me-2 text-warning"></i>Schedule
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="Command.StartDate" class="form-label">Start Date</label>
-                                <input asp-for="Command.StartDate" type="date" class="form-control" />
-                                <span asp-validation-for="Command.StartDate" class="text-danger"></span>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-calendar-alt" style="color: var(--purple);"></i>
+                            Schedule
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="Command.StartDate" class="form-label">Start Date *</label>
+                                <input asp-for="Command.StartDate" type="date" class="form-input" />
+                                <span asp-validation-for="Command.StartDate" class="form-error"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.EndDate" class="form-label">End Date</label>
-                                <input asp-for="Command.EndDate" type="date" class="form-control" />
-                                <span asp-validation-for="Command.EndDate" class="text-danger"></span>
+                            <div class="form-group">
+                                <label asp-for="Command.EndDate" class="form-label">End Date *</label>
+                                <input asp-for="Command.EndDate" type="date" class="form-input" />
+                                <span asp-validation-for="Command.EndDate" class="form-error"></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Additional Notes -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-edit me-2 text-success"></i>Additional Information
-                        </h6>
-                        <div class="mb-3">
-                            <label asp-for="Command.Notes" class="form-label">Notes (Optional)</label>
-                            <textarea asp-for="Command.Notes" class="form-control" rows="3" placeholder="Any additional notes or special instructions..."></textarea>
-                            <span asp-validation-for="Command.Notes" class="text-danger"></span>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-sticky-note" style="color: var(--success);"></i>
+                            Additional Information
+                        </h3>
+                        <div class="form-group">
+                            <label asp-for="Command.Notes" class="form-label">Notes</label>
+                            <textarea asp-for="Command.Notes" class="form-input form-textarea" placeholder="Any additional notes or special instructions..."></textarea>
+                            <span asp-validation-for="Command.Notes" class="form-error"></span>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Schedule Maintenance
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-minimal btn-primary-minimal">
+                            <i class="fas fa-check"></i>
+                            Schedule Maintenance
                         </button>
-                        <a asp-page="Index" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
+                        <a asp-page="Index" class="btn-minimal btn-secondary-minimal">
+                            Cancel
                         </a>
                     </div>
-                </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-lightbulb me-2 text-warning"></i>Maintenance Categories
-                </h6>
+    <!-- Sidebar -->
+    <div>
+        <!-- Categories Guide -->
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h3 class="card-title-minimal">
+                    <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
+                    Maintenance Categories
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <strong>Common Categories:</strong>
-                    <ul class="mt-1 mb-0 small">
+            <div class="card-body-minimal">
+                <div class="sidebar-section">
+                    <span class="sidebar-strong">Common Categories:</span>
+                    <ul class="sidebar-list">
                         <li><strong>Cleaning:</strong> Regular cleaning, deep cleaning</li>
                         <li><strong>Repairs:</strong> Fix broken items, replace parts</li>
                         <li><strong>Inspection:</strong> Safety, compliance checks</li>
@@ -175,9 +547,9 @@
                         <li><strong>Electrical:</strong> Wiring, outlets, lighting</li>
                     </ul>
                 </div>
-                <div>
-                    <strong>Priority Levels:</strong>
-                    <ul class="mt-1 mb-0 small">
+                <div class="sidebar-section">
+                    <span class="sidebar-strong">Priority Levels:</span>
+                    <ul class="sidebar-list">
                         <li><strong>Urgent:</strong> Safety issues, immediate attention</li>
                         <li><strong>High:</strong> Important, schedule within days</li>
                         <li><strong>Medium:</strong> Standard maintenance</li>
@@ -187,22 +559,27 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm mt-3">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-link me-2 text-info"></i>Quick Links
-                </h6>
+        <!-- Quick Links -->
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h3 class="card-title-minimal">
+                    <i class="fas fa-link" style="color: var(--info);"></i>
+                    Quick Links
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a asp-page="/Apartments/Index" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-building me-2"></i>View Apartments
+            <div class="card-body-minimal">
+                <div class="quick-links">
+                    <a asp-page="/Apartments/Index" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-building"></i>
+                        View Apartments
                     </a>
-                    <a asp-page="/Rooms/Index" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-door-open me-2"></i>View Rooms
+                    <a asp-page="/Rooms/Index" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-door-open"></i>
+                        View Rooms
                     </a>
-                    <a asp-page="Index" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-calendar me-2"></i>Maintenance Calendar
+                    <a asp-page="Index" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-calendar"></i>
+                        Maintenance Calendar
                     </a>
                 </div>
             </div>
@@ -216,53 +593,72 @@
         const roomRadio = document.getElementById('targetRoom');
         const apartmentSelection = document.getElementById('apartmentSelection');
         const roomSelection = document.getElementById('roomSelection');
-        const apartmentSelect = document.querySelector('select[name="Command.ApartmentId"]');
-        const roomSelect = document.querySelector('select[name="Command.RoomId"]');
+        const apartmentSelect = document.querySelector('[name="Command.ApartmentId"]');
+        const roomSelect = document.querySelector('[name="Command.RoomId"]');
+        const selectionInfo = document.getElementById('selectionInfo');
 
-        // Handle target type changes
-        function handleTargetTypeChange() {
+        // Handle target type change
+        apartmentRadio.addEventListener('change', handleTargetChange);
+        roomRadio.addEventListener('change', handleTargetChange);
+        apartmentSelect.addEventListener('change', loadRooms);
+
+        function handleTargetChange() {
             if (apartmentRadio.checked) {
                 apartmentSelection.style.display = 'block';
                 roomSelection.style.display = 'none';
+                roomSelect.disabled = true;
                 roomSelect.value = '';
+                selectionInfo.style.display = 'none';
             } else {
                 apartmentSelection.style.display = 'block';
                 roomSelection.style.display = 'block';
+                roomSelect.disabled = !apartmentSelect.value;
+                if (apartmentSelect.value) {
+                    loadRooms();
+                }
             }
         }
 
-        apartmentRadio.addEventListener('change', handleTargetTypeChange);
-        roomRadio.addEventListener('change', handleTargetTypeChange);
+        function loadRooms() {
+            const apartmentId = apartmentSelect.value;
 
-        // Load rooms when apartment is selected
-        apartmentSelect.addEventListener('change', async function() {
-            const apartmentId = this.value;
-            roomSelect.innerHTML = '<option value="">-- Choose a room --</option>';
-
-            if (apartmentId && roomRadio.checked) {
-                try {
-                    const response = await fetch(`/api/apartments/${apartmentId}/rooms`);
-                    if (response.ok) {
-                        const rooms = await response.json();
-                        rooms.forEach(room => {
-                            const option = document.createElement('option');
-                            option.value = room.id;
-                            option.textContent = `Room ${room.roomNumber}`;
-                            roomSelect.appendChild(option);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error loading rooms:', error);
-                }
+            if (!apartmentId) {
+                roomSelect.innerHTML = '<option value="">-- Choose a room --</option>';
+                roomSelect.disabled = true;
+                selectionInfo.style.display = 'none';
+                return;
             }
-        });
 
-        // Set default dates
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+            if (roomRadio.checked) {
+                // In a real implementation, you would fetch rooms via AJAX
+                // For now, we'll show a placeholder
+                roomSelect.innerHTML = '<option value="">-- Loading rooms... --</option>';
+                roomSelect.disabled = false;
 
-        document.querySelector('input[name="Command.StartDate"]').value = today.toISOString().split('T')[0];
-        document.querySelector('input[name="Command.EndDate"]').value = tomorrow.toISOString().split('T')[0];
+                // Simulate loading rooms
+                setTimeout(() => {
+                    roomSelect.innerHTML = `
+                        <option value="">-- Choose a room --</option>
+                        <option value="1">Room 101</option>
+                        <option value="2">Room 102</option>
+                        <option value="3">Room 201</option>
+                    `;
+                }, 500);
+            }
+
+            // Show apartment info
+            const selectedOption = apartmentSelect.options[apartmentSelect.selectedIndex];
+            if (selectedOption.value) {
+                selectionInfo.innerHTML = `<i class="fas fa-info-circle"></i> Maintenance will be scheduled for ${selectedOption.text}`;
+                selectionInfo.style.display = 'block';
+            }
+        }
+
+        // Initialize
+        handleTargetChange();
     });
 </script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

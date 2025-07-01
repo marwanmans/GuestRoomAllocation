@@ -2,145 +2,362 @@
 @model GuestRoomAllocation.Web.Pages.Rooms.IndexModel
 @{
     ViewData["Title"] = "Rooms";
+    ViewData["Subtitle"] = "Manage all rooms across your apartments";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h2 mb-1">
-                    <i class="fas fa-door-open me-2 text-primary"></i>Room Management
-                </h1>
-                <p class="text-muted">Manage all rooms across your apartments</p>
-            </div>
-            <div>
-                <a asp-page="Create" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add New Room
-                </a>
-            </div>
-        </div>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        margin-bottom: 24px;
+    }
+
+    .card-header-minimal {
+        padding: 20px 24px;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    .apartment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .apartment-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .apartment-address {
+        color: var(--gray-500);
+        font-size: 14px;
+    }
+
+    /* Room Cards */
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .room-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.15s ease;
+        height: fit-content;
+    }
+
+        .room-card:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transform: translateY(-1px);
+        }
+
+        .room-card.occupied {
+            border-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .room-card.available {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+
+    .room-number {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .room-details {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .room-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--gray-600);
+        font-size: 13px;
+    }
+
+    /* Status Badges */
+    .badge-minimal {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+        margin-bottom: 12px;
+        display: inline-block;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-secondary {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    .room-count-badge {
+        background: var(--primary);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-ghost {
+        background: transparent;
+        color: var(--gray-500);
+        border: none;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+
+        .btn-ghost:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+    /* Actions */
+    .room-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+    }
+
+    .empty-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--gray-100);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .empty-description {
+        color: var(--gray-500);
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .no-rooms-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+
+        .rooms-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .apartment-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">Rooms</h1>
+        <p class="page-subtitle">Manage all rooms across your apartments</p>
     </div>
+    <a asp-page="Create" class="btn-minimal btn-primary-minimal">
+        <i class="fas fa-plus"></i>
+        Add Room
+    </a>
 </div>
 
+<!-- Content -->
 @if (Model.ApartmentsWithRooms.Any())
 {
     @foreach (var apartment in Model.ApartmentsWithRooms)
     {
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0">
-                <div class="d-flex justify-content-between align-items-center">
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <div class="apartment-header">
                     <div>
-                        <h5 class="card-title mb-1">
-                            <i class="fas fa-building me-2 text-secondary"></i>@apartment.Name
-                        </h5>
-                        <small class="text-muted">
-                            <i class="fas fa-map-marker-alt me-1"></i>
+                        <h3 class="apartment-title">
+                            <i class="fas fa-building" style="color: var(--gray-400); margin-right: 8px;"></i>
+                            @apartment.Name
+                        </h3>
+                        <div class="apartment-address">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>
                             @apartment.Address.Street, @apartment.Address.City
-                        </small>
+                        </div>
                     </div>
-                    <div class="text-end">
-                        <span class="badge bg-primary">@apartment.Rooms.Count Room(s)</span>
+                    <div>
+                        <span class="room-count-badge">@apartment.Rooms.Count Room@(apartment.Rooms.Count != 1 ? "s" : "")</span>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body-minimal">
                 @if (apartment.Rooms.Any())
                 {
-                    <div class="row g-3">
+                    <div class="rooms-grid">
                         @foreach (var room in apartment.Rooms.OrderBy(r => r.RoomNumber))
                         {
                             var isOccupied = room.Allocations.Any();
-                            <div class="col-lg-4 col-md-6">
-                                <div class="card border @(isOccupied ? "border-warning" : "border-success") h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <div>
-                                                <h6 class="card-title mb-1">
-                                                    Room @room.RoomNumber
-                                                </h6>
-                                                <span class="badge @(isOccupied ? "bg-warning" : "bg-success")">
-                                                    @(isOccupied ? "Occupied" : "Available")
-                                                </span>
-                                            </div>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
-                                                    <li><a class="dropdown-item text-danger" asp-page="Delete" asp-route-id="@room.Id"><i class="fas fa-trash me-2"></i>Delete</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                            <div class="room-card @(isOccupied ? "occupied" : "available")">
+                                <div class="badge-minimal @(isOccupied ? "badge-warning" : "badge-success")">
+                                    @(isOccupied ? "Occupied" : "Available")
+                                </div>
 
-                                        <div class="row g-2 mb-3">
-                                            <div class="col-6">
-                                                <div class="text-center p-2 bg-light rounded">
-                                                    <div class="fw-bold text-info">@room.Size</div>
-                                                    <small class="text-muted">sq ft</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-center p-2 bg-light rounded">
-                                                    <div class="fw-bold text-primary">@room.MaxOccupancy</div>
-                                                    <small class="text-muted">Max guests</small>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="room-number">Room @room.RoomNumber</div>
 
-                                        <div class="mb-3">
-                                            @if (room.HasPrivateBathroom)
-                                            {
-                                                <span class="badge bg-success me-2">
-                                                    <i class="fas fa-bath me-1"></i>Private Bath
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary me-2">
-                                                    <i class="fas fa-bath me-1"></i>Shared Bath
-                                                </span>
-                                            }
-                                        </div>
-
-                                        @if (!string.IsNullOrEmpty(room.Description))
-                                        {
-                                            <div class="mb-3">
-                                                <small class="text-muted d-block">Description</small>
-                                                <span class="small">@room.Description</span>
-                                            </div>
-                                        }
-
-                                        @if (isOccupied)
-                                        {
-                                            var currentAllocation = room.Allocations.First();
-                                            <div class="border-top pt-3">
-                                                <small class="text-muted d-block mb-1">Current Guest</small>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="small fw-bold">@currentAllocation.Guest.FirstName @currentAllocation.Guest.LastName</span>
-                                                    <small class="text-muted">
-                                                        Until @currentAllocation.DateRange.EndDate.ToString("MMM dd")
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        }
+                                <div class="room-details">
+                                    <div class="room-detail">
+                                        <i class="fas fa-expand-arrows-alt"></i>
+                                        @room.Size m²
                                     </div>
-                                    <div class="card-footer bg-transparent border-0 pt-0">
-                                        <div class="d-flex gap-2">
-                                            @if (!isOccupied)
-                                            {
-                                                <a href="#" class="btn btn-sm btn-outline-primary flex-fill">
-                                                    <i class="fas fa-plus me-1"></i>Assign Guest
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a href="#" class="btn btn-sm btn-outline-info flex-fill">
-                                                    <i class="fas fa-eye me-1"></i>View Allocation
-                                                </a>
-                                            }
-                                        </div>
+                                    <div class="room-detail">
+                                        <i class="fas fa-users"></i>
+                                        Max @room.MaxOccupancy guest@(room.MaxOccupancy != 1 ? "s" : "")
                                     </div>
+                                    <div class="room-detail">
+                                        <i class="fas fa-bath"></i>
+                                        @(room.HasPrivateBathroom ? "Private" : "Shared") bathroom
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(room.Description))
+                                    {
+                                        <div class="room-detail">
+                                            <i class="fas fa-info-circle"></i>
+                                            @(room.Description.Length > 40 ? room.Description.Substring(0, 40) + "..." : room.Description)
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="room-actions">
+                                    @if (isOccupied)
+                                    {
+                                        <a asp-page="/Allocations/Index" asp-route-roomId="@room.Id" class="btn-ghost" title="View Allocation">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-page="/Allocations/Create" asp-route-roomId="@room.Id" class="btn-ghost" title="Create Allocation">
+                                            <i class="fas fa-plus"></i>
+                                        </a>
+                                    }
+                                    <button class="btn-ghost" title="Edit Room" onclick="editRoom('@room.Id')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-ghost" title="Delete Room" style="color: var(--danger);"
+                                            onclick="confirmDelete('@room.Id', 'Room @room.RoomNumber')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                             </div>
                         }
@@ -148,12 +365,15 @@
                 }
                 else
                 {
-                    <div class="text-center py-4">
-                        <i class="fas fa-door-open text-muted mb-3" style="font-size: 3rem;"></i>
-                        <h6 class="text-muted">No rooms in this apartment</h6>
-                        <p class="text-muted small mb-3">Add rooms to start managing guest allocations.</p>
-                        <a asp-page="Create" asp-route-apartmentId="@apartment.Id" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-plus me-2"></i>Add First Room
+                    <div class="no-rooms-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-door-open" style="color: var(--gray-400); font-size: 20px;"></i>
+                        </div>
+                        <h4 class="empty-title">No rooms in this apartment</h4>
+                        <p class="empty-description">Add rooms to start managing guest allocations.</p>
+                        <a asp-page="Create" asp-route-apartmentId="@apartment.Id" class="btn-minimal btn-primary-minimal">
+                            <i class="fas fa-plus"></i>
+                            Add First Room
                         </a>
                     </div>
                 }
@@ -163,17 +383,38 @@
 }
 else
 {
-    <div class="text-center py-5">
-        <div class="mb-4">
-            <i class="fas fa-building text-muted" style="font-size: 4rem;"></i>
+    <div class="card-minimal">
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-building" style="color: var(--gray-400); font-size: 24px;"></i>
+            </div>
+            <h3 class="empty-title">No apartments found</h3>
+            <p class="empty-description">You need to create apartments before you can add rooms.</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <a asp-page="/Apartments/Create" class="btn-minimal btn-primary-minimal">
+                    <i class="fas fa-building"></i>
+                    Create Apartment First
+                </a>
+                <a asp-page="/Apartments/Index" class="btn-minimal" style="background: white; color: var(--gray-600); border: 1px solid var(--gray-300);">
+                    <i class="fas fa-list"></i>
+                    View Apartments
+                </a>
+            </div>
         </div>
-        <h4 class="text-muted mb-3">No Apartments Found</h4>
-        <p class="text-muted mb-4">You need to create apartments before you can add rooms.</p>
-        <a asp-page="/Apartments/Create" class="btn btn-primary me-2">
-            <i class="fas fa-building me-2"></i>Create Apartment First
-        </a>
-        <a asp-page="/Apartments/Index" class="btn btn-outline-secondary">
-            <i class="fas fa-list me-2"></i>View Apartments
-        </a>
     </div>
 }
+
+<script>
+    function editRoom(roomId) {
+        // Navigate to edit page when implemented
+        console.log('Edit room:', roomId);
+        // window.location.href = `/Rooms/Edit/${roomId}`;
+    }
+
+    function confirmDelete(roomId, roomName) {
+        if (confirm(`Are you sure you want to delete "${roomName}"? This action cannot be undone.`)) {
+            // Handle delete - you can implement this with a form or AJAX call
+            console.log('Delete room:', roomId);
+        }
+    }
+</script>

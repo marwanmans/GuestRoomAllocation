@@ -2,166 +2,517 @@
 @model GuestRoomAllocation.Web.Pages.Allocations.CreateModel
 @{
     ViewData["Title"] = "Create Allocation";
+    ViewData["Subtitle"] = "Assign a guest to a room for specific dates";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h2 mb-1">
-                    <i class="fas fa-calendar-plus me-2 text-primary"></i>Create New Allocation
-                </h1>
-                <p class="text-muted">Assign a guest to a room for specific dates</p>
-            </div>
-            <div>
-                <a asp-page="Index" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Allocations
-                </a>
-            </div>
-        </div>
-    </div>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --danger: #ef4444;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --info: #0ea5e9;
+    }
+
+    /* Layout */
+    .layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 32px;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-minimal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-item {
+        color: var(--gray-500);
+        text-decoration: none;
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--gray-700);
+        }
+
+    .breadcrumb-separator {
+        color: var(--gray-300);
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        height: fit-content;
+    }
+
+    .card-header-minimal {
+        padding: 20px 24px;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    .card-title-minimal {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Alerts */
+    .alert-minimal {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .alert-info {
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        color: #1e40af;
+    }
+
+    .alert-warning {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        color: #92400e;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        border: 1px solid #86efac;
+        color: #166534;
+    }
+
+    .alert-hidden {
+        display: none;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s ease;
+        background: white;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .form-help {
+        color: var(--gray-500);
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    /* Select */
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.15s ease;
+    }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-select:disabled {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+    /* Checkboxes */
+    .form-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            accent-color: var(--primary);
+        }
+
+    .checkbox-label {
+        color: var(--gray-700);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover:not(:disabled) {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary-minimal:disabled {
+            background: var(--gray-300);
+            color: var(--gray-500);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .btn-secondary-minimal {
+        background: white;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+        .btn-secondary-minimal:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+            text-decoration: none;
+        }
+
+    .btn-small {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 32px;
+    }
+
+    /* Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    /* Duration Display */
+    .duration-display {
+        font-size: 14px;
+        color: var(--gray-600);
+        margin-top: 8px;
+    }
+
+    /* Room Preview */
+    .room-preview {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 12px;
+    }
+
+    .room-preview-title {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .room-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .feature-badge {
+        background: white;
+        border: 1px solid var(--gray-300);
+        padding: 4px 8px;
+        border-radius: 16px;
+        font-size: 12px;
+        color: var(--gray-600);
+    }
+
+    /* Quick Links */
+    .quick-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .layout-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-minimal">
+    <a asp-page="Index" class="breadcrumb-item">Allocations</a>
+    <span class="breadcrumb-separator">/</span>
+    <span style="color: var(--gray-900);">Create Allocation</span>
 </div>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-info-circle me-2 text-primary"></i>Allocation Details
-                </h5>
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Create Allocation</h1>
+    <p class="page-subtitle">Assign a guest to a room for specific dates</p>
+</div>
+
+<div class="layout-grid">
+    <!-- Main Form -->
+    <div>
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h2 class="card-title-minimal">
+                    <i class="fas fa-calendar-plus" style="color: var(--primary);"></i>
+                    Allocation Details
+                </h2>
             </div>
-            <div class="card-body">
+            <div class="card-body-minimal">
                 <form method="post" id="allocationForm">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <!-- Date Selection -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-calendar me-2 text-info"></i>Stay Dates
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="Command.StartDate" class="form-label">Check-in Date</label>
-                                <input asp-for="Command.StartDate" type="date" class="form-control" id="startDate" />
-                                <span asp-validation-for="Command.StartDate" class="text-danger"></span>
-                                <div class="form-text">Guest arrival date</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.EndDate" class="form-label">Check-out Date</label>
-                                <input asp-for="Command.EndDate" type="date" class="form-control" id="endDate" />
-                                <span asp-validation-for="Command.EndDate" class="text-danger"></span>
-                                <div class="form-text">Guest departure date</div>
-                            </div>
-                        </div>
-                        <div class="mt-2">
-                            <small id="durationDisplay" class="text-muted"></small>
-                        </div>
+                    <!-- Room Availability Alert -->
+                    <div id="availabilityAlert" class="alert-minimal alert-info alert-hidden">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Checking room availability...</span>
                     </div>
 
-                    <!-- Room Availability Alert -->
-                    <div id="availabilityAlert" class="alert alert-info d-none mb-4">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-spinner fa-spin me-2"></i>
-                            <span>Checking room availability...</span>
+                    <!-- Date Selection -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-calendar" style="color: var(--info);"></i>
+                            Stay Dates
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label asp-for="Command.StartDate" class="form-label">Check-in Date *</label>
+                                <input asp-for="Command.StartDate" type="date" class="form-input" id="startDate" />
+                                <span asp-validation-for="Command.StartDate" class="form-error"></span>
+                                <div class="form-help">Guest arrival date</div>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Command.EndDate" class="form-label">Check-out Date *</label>
+                                <input asp-for="Command.EndDate" type="date" class="form-input" id="endDate" />
+                                <span asp-validation-for="Command.EndDate" class="form-error"></span>
+                                <div class="form-help">Guest departure date</div>
+                            </div>
                         </div>
+                        <div class="duration-display" id="durationDisplay"></div>
                     </div>
 
                     <!-- Guest Selection -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-user me-2 text-success"></i>Guest Information
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.GuestId" class="form-label">Select Guest</label>
-                                <select asp-for="Command.GuestId" asp-items="Model.GuestOptions" class="form-select">
-                                    <option value="">-- Choose a guest --</option>
-                                </select>
-                                <span asp-validation-for="Command.GuestId" class="text-danger"></span>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Don't see the guest? <a asp-page="/Guests/Create" target="_blank">Add a new guest</a>
-                                </div>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-user" style="color: var(--success);"></i>
+                            Guest Information
+                        </h3>
+                        <div class="form-group">
+                            <label asp-for="Command.GuestId" class="form-label">Select Guest *</label>
+                            <select asp-for="Command.GuestId" asp-items="Model.GuestOptions" class="form-select">
+                                <option value="">-- Choose a guest --</option>
+                            </select>
+                            <span asp-validation-for="Command.GuestId" class="form-error"></span>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Don't see the guest? <a asp-page="/Guests/Create">Add new guest</a>
                             </div>
                         </div>
                     </div>
 
                     <!-- Room Selection -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-door-open me-2 text-warning"></i>Room Assignment
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.RoomId" class="form-label">Available Rooms</label>
-                                <select asp-for="Command.RoomId" class="form-select" id="roomSelect">
-                                    <option value="">-- Select dates first to see available rooms --</option>
-                                </select>
-                                <span asp-validation-for="Command.RoomId" class="text-danger"></span>
-                                <div class="form-text">
-                                    <i class="fas fa-lightbulb me-1"></i>
-                                    Only rooms available for your selected dates are shown
-                                </div>
-                            </div>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-door-open" style="color: var(--warning);"></i>
+                            Room Assignment
+                        </h3>
+                        <div class="form-group">
+                            <label asp-for="Command.RoomId" class="form-label">Select Room *</label>
+                            <select asp-for="Command.RoomId" class="form-select" id="roomSelect" disabled>
+                                <option value="">-- First select dates to see available rooms --</option>
+                            </select>
+                            <span asp-validation-for="Command.RoomId" class="form-error"></span>
+                            <div class="form-help">Available rooms will appear after selecting dates</div>
                         </div>
-                    </div>
 
-                    <!-- Room Details Preview -->
-                    <div id="roomPreview" class="mb-4 d-none">
-                        <div class="card border-info">
-                            <div class="card-header bg-info bg-opacity-10">
-                                <h6 class="card-title mb-0">
-                                    <i class="fas fa-eye me-2"></i>Selected Room Details
-                                </h6>
-                            </div>
-                            <div class="card-body" id="roomDetails">
-                                <!-- Room details will be populated via JavaScript -->
-                            </div>
+                        <!-- Room Preview -->
+                        <div id="roomPreview" class="room-preview" style="display: none;">
+                            <div class="room-preview-title" id="roomPreviewTitle"></div>
+                            <div class="room-features" id="roomPreviewFeatures"></div>
                         </div>
                     </div>
 
                     <!-- Additional Options -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-cog me-2 text-secondary"></i>Additional Options
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input asp-for="Command.BathroomPreferenceOverride" class="form-check-input" type="checkbox" />
-                                    <label asp-for="Command.BathroomPreferenceOverride" class="form-check-label">
-                                        Override Bathroom Preference
-                                    </label>
-                                    <div class="form-text">
-                                        Check if guest's bathroom preference doesn't match room type
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-cog" style="color: var(--gray-600);"></i>
+                            Additional Options
+                        </h3>
+                        <div class="form-checkbox">
+                            <input asp-for="Command.BathroomPreferenceOverride" type="checkbox" />
+                            <label asp-for="Command.BathroomPreferenceOverride" class="checkbox-label">
+                                Override Bathroom Preference
+                            </label>
                         </div>
+                        <div class="form-help">Check if guest's bathroom preference doesn't match room type</div>
                     </div>
 
                     <!-- Notes -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-sticky-note me-2 text-info"></i>Additional Notes
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.Notes" class="form-label">Notes (Optional)</label>
-                                <textarea asp-for="Command.Notes" class="form-control" rows="3"
-                                          placeholder="Special requests, preferences, or important information..."></textarea>
-                                <span asp-validation-for="Command.Notes" class="text-danger"></span>
-                            </div>
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-sticky-note" style="color: var(--info);"></i>
+                            Additional Notes
+                        </h3>
+                        <div class="form-group">
+                            <label asp-for="Command.Notes" class="form-label">Notes</label>
+                            <textarea asp-for="Command.Notes" class="form-input form-textarea" placeholder="Special requests, preferences, or important information..."></textarea>
+                            <span asp-validation-for="Command.Notes" class="form-error"></span>
                         </div>
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                            <i class="fas fa-plus me-2"></i>Create Allocation
+                    <div class="form-actions">
+                        <button type="submit" class="btn-minimal btn-primary-minimal" id="submitBtn" disabled>
+                            <i class="fas fa-check"></i>
+                            Create Allocation
                         </button>
-                        <a asp-page="Index" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
+                        <a asp-page="Index" class="btn-minimal btn-secondary-minimal">
+                            Cancel
                         </a>
                     </div>
                 </form>
@@ -169,87 +520,71 @@
         </div>
     </div>
 
-    <!-- Helper Sidebar -->
-    <div class="col-lg-4">
-        <!-- Quick Stats -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-chart-bar me-2 text-primary"></i>Quick Stats
-                </h6>
+    <!-- Sidebar -->
+    <div>
+        <!-- Guidelines -->
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h3 class="card-title-minimal">
+                    <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
+                    Booking Guidelines
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="row g-2 text-center">
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded">
-                            <div class="fw-bold text-primary">@Model.GuestOptions.Count()</div>
-                            <small class="text-muted">Guests</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded">
-                            <div class="fw-bold text-info">@Model.RoomOptions.Count()</div>
-                            <small class="text-muted">Rooms</small>
-                        </div>
-                    </div>
+            <div class="card-body-minimal">
+                <div style="margin-bottom: 16px;">
+                    <div style="font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Date Selection:</div>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="color: var(--gray-600); font-size: 13px; margin-bottom: 4px; padding-left: 16px; position: relative;">
+                            <span style="position: absolute; left: 0;">•</span>
+                            Check-in must be today or later
+                        </li>
+                        <li style="color: var(--gray-600); font-size: 13px; margin-bottom: 4px; padding-left: 16px; position: relative;">
+                            <span style="position: absolute; left: 0;">•</span>
+                            Check-out must be after check-in
+                        </li>
+                        <li style="color: var(--gray-600); font-size: 13px; margin-bottom: 4px; padding-left: 16px; position: relative;">
+                            <span style="position: absolute; left: 0;">•</span>
+                            Available rooms update automatically
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-
-        <!-- Tips -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-lightbulb me-2 text-warning"></i>Tips
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="small">
-                    <div class="mb-3">
-                        <strong>Date Selection:</strong>
-                        <ul class="mt-1 mb-0">
-                            <li>Check-in must be today or later</li>
-                            <li>Check-out must be after check-in</li>
-                            <li>Minimum stay: 1 day</li>
-                        </ul>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Room Availability:</strong>
-                        <ul class="mt-1 mb-0">
-                            <li>Automatically checks for conflicts</li>
-                            <li>Only shows available rooms</li>
-                            <li>Updates when dates change</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <strong>Best Practices:</strong>
-                        <ul class="mt-1 mb-0">
-                            <li>Check guest preferences</li>
-                            <li>Consider room amenities</li>
-                            <li>Add relevant notes</li>
-                        </ul>
-                    </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Room Availability:</div>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="color: var(--gray-600); font-size: 13px; margin-bottom: 4px; padding-left: 16px; position: relative;">
+                            <span style="position: absolute; left: 0;">•</span>
+                            Only rooms available for full date range shown
+                        </li>
+                        <li style="color: var(--gray-600); font-size: 13px; margin-bottom: 4px; padding-left: 16px; position: relative;">
+                            <span style="position: absolute; left: 0;">•</span>
+                            Conflicts with existing bookings prevented
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
 
         <!-- Quick Links -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-link me-2 text-info"></i>Quick Links
-                </h6>
+        <div class="card-minimal">
+            <div class="card-header-minimal">
+                <h3 class="card-title-minimal">
+                    <i class="fas fa-link" style="color: var(--info);"></i>
+                    Quick Links
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a asp-page="/Guests/Create" class="btn btn-sm btn-outline-primary" target="_blank">
-                        <i class="fas fa-user-plus me-2"></i>Add New Guest
+            <div class="card-body-minimal">
+                <div class="quick-links">
+                    <a asp-page="/Guests/Create" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-user-plus"></i>
+                        Add New Guest
                     </a>
-                    <a asp-page="/Rooms/Index" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-door-open me-2"></i>View All Rooms
+                    <a asp-page="/Rooms/Index" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-door-open"></i>
+                        View Rooms
                     </a>
-                    <a asp-page="Index" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-calendar-alt me-2"></i>Current Allocations
+                    <a asp-page="/Apartments/Index" class="btn-minimal btn-secondary-minimal btn-small">
+                        <i class="fas fa-building"></i>
+                        View Apartments
                     </a>
                 </div>
             </div>
@@ -257,157 +592,129 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            const startDateInput = $('#startDate');
-            const endDateInput = $('#endDate');
-            const roomSelect = $('#roomSelect');
-            const submitBtn = $('#submitBtn');
-            const durationDisplay = $('#durationDisplay');
-            const availabilityAlert = $('#availabilityAlert');
-            const roomPreview = $('#roomPreview');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const roomSelect = document.getElementById('roomSelect');
+        const availabilityAlert = document.getElementById('availabilityAlert');
+        const durationDisplay = document.getElementById('durationDisplay');
+        const submitBtn = document.getElementById('submitBtn');
+        const roomPreview = document.getElementById('roomPreview');
 
-            let currentRooms = [];
+        // Update duration and check availability when dates change
+        startDateInput.addEventListener('change', handleDateChange);
+        endDateInput.addEventListener('change', handleDateChange);
+        roomSelect.addEventListener('change', showRoomPreview);
+        document.getElementById('Command_GuestId').addEventListener('change', updateSubmitButton);
 
-            // Update duration display
-            function updateDuration() {
-                const startDate = new Date(startDateInput.val());
-                const endDate = new Date(endDateInput.val());
+        function handleDateChange() {
+            updateDuration();
+            checkAvailability();
+        }
 
-                if (startDate && endDate && endDate > startDate) {
-                    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    durationDisplay.text(`Duration: ${days} day(s)`);
-                    return days;
-                } else {
-                    durationDisplay.text('Please select valid dates');
-                    return 0;
-                }
+        function updateDuration() {
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+
+            if (startDate && endDate && endDate > startDate) {
+                const diffTime = Math.abs(endDate - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                durationDisplay.textContent = `Duration: ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+                return diffDays;
+            } else {
+                durationDisplay.textContent = '';
+                return 0;
+            }
+        }
+
+        function checkAvailability() {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+
+            if (!startDate || !endDate || new Date(endDate) <= new Date(startDate)) {
+                roomSelect.innerHTML = '<option value="">-- First select valid dates --</option>';
+                roomSelect.disabled = true;
+                roomPreview.style.display = 'none';
+                updateSubmitButton();
+                return;
             }
 
-            // Check room availability
-            function checkAvailability() {
-                const startDate = startDateInput.val();
-                const endDate = endDateInput.val();
+            // Show loading
+            availabilityAlert.classList.remove('alert-hidden');
+            roomSelect.disabled = true;
+            roomSelect.innerHTML = '<option value="">-- Checking availability --</option>';
 
-                if (!startDate || !endDate || endDate <= startDate) {
-                    roomSelect.html('<option value="">-- Select valid dates first --</option>');
-                    roomPreview.addClass('d-none');
-                    submitBtn.prop('disabled', true);
-                    return;
-                }
+            // Check availability via AJAX
+            fetch(`/Allocations/Create?handler=CheckAvailability&startDate=${startDate}&endDate=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    availabilityAlert.classList.add('alert-hidden');
+                    roomSelect.disabled = false;
 
-                availabilityAlert.removeClass('d-none');
-                roomSelect.prop('disabled', true);
-
-                $.get('@Url.Page("Create", "CheckAvailability")', {
-                    startDate: startDate,
-                    endDate: endDate
-                })
-                .done(function(data) {
-                    availabilityAlert.addClass('d-none');
-                    roomSelect.prop('disabled', false);
-
-                    if (data.available && data.rooms.length > 0) {
-                        currentRooms = data.rooms;
-                        let options = '<option value="">-- Choose an available room --</option>';
-
-                        data.rooms.forEach(function(room) {
+                    if (data.available && data.rooms && data.rooms.length > 0) {
+                        let options = '<option value="">-- Choose a room --</option>';
+                        data.rooms.forEach(room => {
                             const bathType = room.hasPrivateBathroom ? 'Private Bath' : 'Shared Bath';
                             options += `<option value="${room.id}" data-apartment="${room.apartment}" data-room="${room.roomNumber}" data-size="${room.size}" data-occupancy="${room.maxOccupancy}" data-bath="${room.hasPrivateBathroom}">${room.text} - ${bathType}</option>`;
                         });
-
-                        roomSelect.html(options);
+                        roomSelect.innerHTML = options;
                     } else {
-                        roomSelect.html('<option value="">-- No rooms available for selected dates --</option>');
+                        roomSelect.innerHTML = '<option value="">-- No rooms available for selected dates --</option>';
                     }
 
+                    roomPreview.style.display = 'none';
                     updateSubmitButton();
                 })
-                .fail(function() {
-                    availabilityAlert.addClass('d-none');
-                    roomSelect.prop('disabled', false);
-                    roomSelect.html('<option value="">-- Error checking availability --</option>');
+                .catch(function() {
+                    availabilityAlert.classList.add('alert-hidden');
+                    roomSelect.disabled = false;
+                    roomSelect.innerHTML = '<option value="">-- Error checking availability --</option>';
                     updateSubmitButton();
                 });
+        }
+
+        function showRoomPreview() {
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            if (selectedOption.value) {
+                const apartment = selectedOption.dataset.apartment;
+                const roomNumber = selectedOption.dataset.room;
+                const size = selectedOption.dataset.size;
+                const occupancy = selectedOption.dataset.occupancy;
+                const hasPrivateBath = selectedOption.dataset.bath === 'true';
+
+                document.getElementById('roomPreviewTitle').textContent = `${apartment} - Room ${roomNumber}`;
+
+                const features = [
+                    `${size} m²`,
+                    `Max ${occupancy} guest${occupancy !== '1' ? 's' : ''}`,
+                    hasPrivateBath ? 'Private Bathroom' : 'Shared Bathroom'
+                ];
+
+                document.getElementById('roomPreviewFeatures').innerHTML = features
+                    .map(feature => `<span class="feature-badge">${feature}</span>`)
+                    .join('');
+
+                roomPreview.style.display = 'block';
+            } else {
+                roomPreview.style.display = 'none';
             }
-
-            // Update submit button state
-            function updateSubmitButton() {
-                const guestSelected = $('#Command_GuestId').val();
-                const roomSelected = roomSelect.val();
-                const validDates = updateDuration() > 0;
-
-                submitBtn.prop('disabled', !(guestSelected && roomSelected && validDates));
-            }
-
-            // Show room preview
-            function showRoomPreview() {
-                const selectedOption = roomSelect.find('option:selected');
-                if (selectedOption.val()) {
-                    const apartment = selectedOption.data('apartment');
-                    const roomNumber = selectedOption.data('room');
-                    const size = selectedOption.data('size');
-                    const occupancy = selectedOption.data('occupancy');
-                    const hasPrivateBath = selectedOption.data('bath');
-
-                    const bathBadge = hasPrivateBath
-                        ? '<span class="badge bg-success"><i class="fas fa-bath me-1"></i>Private</span>'
-                        : '<span class="badge bg-secondary"><i class="fas fa-bath me-1"></i>Shared</span>';
-
-                    $('#roomDetails').html(`
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <strong>Location:</strong><br>
-                                ${apartment} - Room ${roomNumber}
-                            </div>
-                            <div class="col-6">
-                                <strong>Size:</strong><br>
-                                ${size} sq ft
-                            </div>
-                            <div class="col-6">
-                                <strong>Capacity:</strong><br>
-                                Max ${occupancy} guest(s)
-                            </div>
-                            <div class="col-6">
-                                <strong>Bathroom:</strong><br>
-                                ${bathBadge}
-                            </div>
-                        </div>
-                    `);
-
-                    roomPreview.removeClass('d-none');
-                } else {
-                    roomPreview.addClass('d-none');
-                }
-            }
-
-            // Event handlers
-            startDateInput.on('change', function() {
-                updateDuration();
-                checkAvailability();
-            });
-
-            endDateInput.on('change', function() {
-                updateDuration();
-                checkAvailability();
-            });
-
-            $('#Command_GuestId').on('change', updateSubmitButton);
-
-            roomSelect.on('change', function() {
-                showRoomPreview();
-                updateSubmitButton();
-            });
-
-            // Initial setup
-            updateDuration();
             updateSubmitButton();
+        }
 
-            // Check availability if dates are already set
-            if (startDateInput.val() && endDateInput.val()) {
-                checkAvailability();
-            }
-        });
-    </script>
+        function updateSubmitButton() {
+            const guestSelected = document.getElementById('Command_GuestId').value;
+            const roomSelected = roomSelect.value;
+            const validDates = updateDuration() > 0;
+
+            submitBtn.disabled = !(guestSelected && roomSelected && validDates);
+        }
+
+        // Initialize
+        updateDuration();
+    });
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

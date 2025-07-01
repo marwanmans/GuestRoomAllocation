@@ -1,4 +1,357 @@
-﻿@page
+﻿@page "{id:int}"
 @model GuestRoomAllocation.Web.Pages.Guests.EditModel
 @{
+    ViewData["Title"] = "Edit Guest";
+    ViewData["Subtitle"] = "Update guest information and contact details";
+}
+
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --danger: #ef4444;
+    }
+
+    /* Content Area */
+    .content-area-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-minimal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-item {
+        color: var(--gray-500);
+        text-decoration: none;
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--gray-700);
+        }
+
+    .breadcrumb-separator {
+        color: var(--gray-300);
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    /* Info Box */
+    .info-box {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .info-box-title {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .info-box-text {
+        color: var(--gray-600);
+        font-size: 13px;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s ease;
+        background: white;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary-minimal {
+        background: white;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+        .btn-secondary-minimal:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+            text-decoration: none;
+        }
+
+    .btn-danger-minimal {
+        background: white;
+        color: var(--danger);
+        border: 1px solid #fecaca;
+    }
+
+        .btn-danger-minimal:hover {
+            background: #fef2f2;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 32px;
+    }
+
+    .form-actions-split {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions-split {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+    }
+</style>
+
+<div class="content-area-form">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-minimal">
+        <a asp-page="Index" class="breadcrumb-item">Guests</a>
+        <span class="breadcrumb-separator">/</span>
+        <span style="color: var(--gray-900);">Edit Guest</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Edit Guest</h1>
+        <p class="page-subtitle">Update guest information and contact details</p>
+    </div>
+
+    <!-- Guest Info Box -->
+    <div class="info-box">
+        <div class="info-box-title">Editing Guest</div>
+        <div class="info-box-text">Update guest information below</div>
+    </div>
+
+    <!-- Form -->
+    <div class="card-minimal">
+        <div class="card-body-minimal">
+            <form method="post">
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name *</label>
+                            <input name="FirstName" class="form-input" placeholder="Enter first name" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name *</label>
+                            <input name="LastName" class="form-input" placeholder="Enter last name" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Contact Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input name="Email" type="email" class="form-input" placeholder="guest@example.com" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input name="Phone" class="form-input" placeholder="+1 (555) 123-4567" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h3 class="section-header">Additional Information</h3>
+                    <div class="form-group">
+                        <label class="form-label">Job Position</label>
+                        <input name="JobPosition" class="form-input" placeholder="e.g., Software Engineer, Manager" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea name="Notes" class="form-input form-textarea" placeholder="Any additional notes..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions form-actions-split">
+                    <div style="display: flex; gap: 12px;">
+                        <button type="submit" class="btn-minimal btn-primary-minimal">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <a asp-page="Index" class="btn-minimal btn-secondary-minimal">
+                            Cancel
+                        </a>
+                    </div>
+                    <button type="button" class="btn-minimal btn-danger-minimal" onclick="confirmDelete()">
+                        <i class="fas fa-trash"></i>
+                        Delete Guest
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete() {
+        if (confirm('Are you sure you want to delete this guest? This action cannot be undone.')) {
+            // Handle delete action
+            console.log('Delete confirmed');
+            // In real implementation, submit delete form or make API call
+        }
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

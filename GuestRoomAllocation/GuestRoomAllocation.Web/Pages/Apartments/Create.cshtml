@@ -1,186 +1,378 @@
 ﻿@page
 @model GuestRoomAllocation.Web.Pages.Apartments.CreateModel
 @{
-    ViewData["Title"] = "Add New Apartment";
+    ViewData["Title"] = "Add Apartment";
+    ViewData["Subtitle"] = "Create a new apartment property";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h2 mb-1">
-                    <i class="fas fa-plus me-2 text-success"></i>Add New Apartment
-                </h1>
-                <p class="text-muted">Create a new apartment property</p>
-            </div>
-            <div>
-                <a asp-page="Index" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
-                </a>
-            </div>
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --danger: #ef4444;
+    }
+
+    /* Content Area */
+    .content-area-form {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-500);
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-minimal {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-item {
+        color: var(--gray-500);
+        text-decoration: none;
+    }
+
+        .breadcrumb-item:hover {
+            color: var(--gray-700);
+        }
+
+    .breadcrumb-separator {
+        color: var(--gray-300);
+    }
+
+    /* Cards */
+    .card-minimal {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+
+    .card-body-minimal {
+        padding: 24px;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s ease;
+        background: white;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-error {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Checkboxes */
+    .form-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            accent-color: var(--primary);
+        }
+
+    .checkbox-label {
+        color: var(--gray-700);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Buttons */
+    .btn-minimal {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-minimal {
+        background: var(--primary);
+        color: white;
+    }
+
+        .btn-primary-minimal:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary-minimal {
+        background: white;
+        color: var(--gray-600);
+        border: 1px solid var(--gray-300);
+    }
+
+        .btn-secondary-minimal:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+            text-decoration: none;
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 32px;
+    }
+
+    /* Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .form-grid-three {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-grid,
+        .form-grid-three {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="content-area-form">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-minimal">
+        <a asp-page="Index" class="breadcrumb-item">Apartments</a>
+        <span class="breadcrumb-separator">/</span>
+        <span style="color: var(--gray-900);">Add Apartment</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Add Apartment</h1>
+        <p class="page-subtitle">Create a new apartment property with all details</p>
+    </div>
+
+    <!-- Form -->
+    <div class="card-minimal">
+        <div class="card-body-minimal">
+            <form method="post">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="section-header">
+                        <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                        Basic Information
+                    </h3>
+                    <div class="form-group">
+                        <label asp-for="Command.Name" class="form-label">Apartment Name *</label>
+                        <input asp-for="Command.Name" class="form-input" placeholder="e.g., Downtown Loft, Garden View Apartment" />
+                        <span asp-validation-for="Command.Name" class="form-error"></span>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="form-section">
+                    <h3 class="section-header">
+                        <i class="fas fa-map-marker-alt" style="color: var(--danger);"></i>
+                        Address Information
+                    </h3>
+                    <div class="form-group">
+                        <label asp-for="Command.Street" class="form-label">Street Address *</label>
+                        <input asp-for="Command.Street" class="form-input" placeholder="123 Main Street, Apt 4B" />
+                        <span asp-validation-for="Command.Street" class="form-error"></span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Command.City" class="form-label">City *</label>
+                            <input asp-for="Command.City" class="form-input" placeholder="Cairo" />
+                            <span asp-validation-for="Command.City" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Command.Country" class="form-label">Country *</label>
+                            <input asp-for="Command.Country" class="form-input" placeholder="Egypt" value="Egypt" />
+                            <span asp-validation-for="Command.Country" class="form-error"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Command.MapLocation" class="form-label">Map Location</label>
+                        <input asp-for="Command.MapLocation" class="form-input" placeholder="Google Maps URL or coordinates (optional)" />
+                        <span asp-validation-for="Command.MapLocation" class="form-error"></span>
+                    </div>
+                </div>
+
+                <!-- Property Details -->
+                <div class="form-section">
+                    <h3 class="section-header">
+                        <i class="fas fa-home" style="color: var(--success);"></i>
+                        Property Details
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Command.TotalBathrooms" class="form-label">Total Bathrooms *</label>
+                            <input asp-for="Command.TotalBathrooms" type="number" min="1" max="50" class="form-input" />
+                            <span asp-validation-for="Command.TotalBathrooms" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Command.OverallSpace" class="form-label">Overall Space (m²) *</label>
+                            <input asp-for="Command.OverallSpace" type="number" min="20" max="1000" class="form-input" />
+                            <span asp-validation-for="Command.OverallSpace" class="form-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features & Amenities -->
+                <div class="form-section">
+                    <h3 class="section-header">
+                        <i class="fas fa-star" style="color: var(--warning);"></i>
+                        Features & Amenities
+                    </h3>
+                    <div class="form-group">
+                        <label asp-for="Command.CommonAreas" class="form-label">Common Areas</label>
+                        <textarea asp-for="Command.CommonAreas" class="form-input form-textarea" placeholder="Living room, kitchen, dining area..."></textarea>
+                        <span asp-validation-for="Command.CommonAreas" class="form-error"></span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="Command.Facilities" class="form-label">Facilities</label>
+                            <textarea asp-for="Command.Facilities" class="form-input form-textarea" placeholder="Parking, elevator, security..."></textarea>
+                            <span asp-validation-for="Command.Facilities" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Command.Amenities" class="form-label">Amenities</label>
+                            <textarea asp-for="Command.Amenities" class="form-input form-textarea" placeholder="WiFi, AC, heating..."></textarea>
+                            <span asp-validation-for="Command.Amenities" class="form-error"></span>
+                        </div>
+                    </div>
+                    <div class="form-checkbox">
+                        <input asp-for="Command.HasLaundry" type="checkbox" />
+                        <label asp-for="Command.HasLaundry" class="checkbox-label">
+                            <i class="fas fa-tshirt" style="margin-right: 4px;"></i>
+                            Has Laundry Facilities
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-minimal btn-primary-minimal">
+                        <i class="fas fa-check"></i>
+                        Create Apartment
+                    </button>
+                    <a asp-page="Index" class="btn-minimal btn-secondary-minimal">
+                        Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <form method="post">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-building me-2 text-primary"></i>Apartment Information
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <!-- Basic Information -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-info-circle me-2 text-primary"></i>Basic Information
-                        </h6>
-                        <div class="mb-3">
-                            <label asp-for="Command.Name" class="form-label">Apartment Name</label>
-                            <input asp-for="Command.Name" class="form-control" placeholder="e.g., Downtown Loft, Garden View Apartment" />
-                            <span asp-validation-for="Command.Name" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- Address Information (Updated - No State/ZipCode) -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>Address Information
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.Street" class="form-label">Street Address</label>
-                                <input asp-for="Command.Street" class="form-control" placeholder="123 Main Street, Apt 4B" />
-                                <span asp-validation-for="Command.Street" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.City" class="form-label">City</label>
-                                <input asp-for="Command.City" class="form-control" placeholder="Cairo" />
-                                <span asp-validation-for="Command.City" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.Country" class="form-label">Country</label>
-                                <input asp-for="Command.Country" class="form-control" placeholder="Egypt" value="Egypt" />
-                                <span asp-validation-for="Command.Country" class="text-danger"></span>
-                            </div>
-                            <div class="col-12">
-                                <label asp-for="Command.MapLocation" class="form-label">Map Location (Optional)</label>
-                                <input asp-for="Command.MapLocation" class="form-control" placeholder="Google Maps URL or coordinates" />
-                                <span asp-validation-for="Command.MapLocation" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Property Details (Updated to Metric) -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-home me-2 text-info"></i>Property Details
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="Command.TotalBathrooms" class="form-label">Total Bathrooms</label>
-                                <input asp-for="Command.TotalBathrooms" type="number" min="1" max="50" class="form-control" />
-                                <span asp-validation-for="Command.TotalBathrooms" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.OverallSpace" class="form-label">Overall Space (m²)</label>
-                                <input asp-for="Command.OverallSpace" type="number" min="20" max="1000" class="form-control" />
-                                <span asp-validation-for="Command.OverallSpace" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Additional Features -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="fas fa-star me-2 text-warning"></i>Features & Amenities
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Command.CommonAreas" class="form-label">Common Areas</label>
-                                <textarea asp-for="Command.CommonAreas" class="form-control" rows="3" placeholder="Living room, kitchen, dining area..."></textarea>
-                                <span asp-validation-for="Command.CommonAreas" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.Facilities" class="form-label">Facilities</label>
-                                <textarea asp-for="Command.Facilities" class="form-control" rows="3" placeholder="Parking, elevator, security..."></textarea>
-                                <span asp-validation-for="Command.Facilities" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Command.Amenities" class="form-label">Amenities</label>
-                                <textarea asp-for="Command.Amenities" class="form-control" rows="3" placeholder="WiFi, AC, heating..."></textarea>
-                                <span asp-validation-for="Command.Amenities" class="text-danger"></span>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-check">
-                                    <input asp-for="Command.HasLaundry" class="form-check-input" type="checkbox" />
-                                    <label asp-for="Command.HasLaundry" class="form-check-label">
-                                        <i class="fas fa-tshirt me-1"></i>Has Laundry Facilities
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Create Apartment
-                        </button>
-                        <a asp-page="Index" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-lightbulb me-2 text-warning"></i>Tips
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <strong>Apartment Naming:</strong>
-                    <ul class="mt-1 mb-0">
-                        <li>Use descriptive names</li>
-                        <li>Include location or key features</li>
-                        <li>Keep it concise but clear</li>
-                    </ul>
-                </div>
-                <div>
-                    <strong>Space Measurement:</strong>
-                    <ul class="mt-1 mb-0">
-                        <li>Measure total usable area</li>
-                        <li>Include all rooms and common areas</li>
-                        <li>Round to nearest square meter</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm mt-3">
-            <div class="card-header bg-transparent border-0">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-link me-2 text-info"></i>Quick Links
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a asp-page="/Rooms/Create" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-door-open me-2"></i>Add Rooms Later
-                    </a>
-                    <a asp-page="Index" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-list me-2"></i>View All Apartments
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
