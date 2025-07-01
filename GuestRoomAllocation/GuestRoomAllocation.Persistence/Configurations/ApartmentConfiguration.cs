@@ -26,7 +26,7 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
         builder.Property(e => e.Amenities)
             .HasMaxLength(1000);
 
-        // Configure Address value object
+        // Configure Address value object (removed State and ZipCode)
         builder.OwnsOne(e => e.Address, address =>
         {
             address.Property(a => a.Street)
@@ -36,14 +36,6 @@ public class ApartmentConfiguration : IEntityTypeConfiguration<Apartment>
             address.Property(a => a.City)
                 .IsRequired()
                 .HasMaxLength(100);
-
-            address.Property(a => a.State)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            address.Property(a => a.ZipCode)
-                .IsRequired()
-                .HasMaxLength(20);
 
             address.Property(a => a.Country)
                 .IsRequired()

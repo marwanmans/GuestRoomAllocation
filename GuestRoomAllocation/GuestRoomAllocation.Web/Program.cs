@@ -1,4 +1,4 @@
-using GuestRoomAllocation.Application;
+﻿using GuestRoomAllocation.Application;
 using GuestRoomAllocation.Infrastructure;
 using GuestRoomAllocation.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +11,8 @@ builder.Services.AddRazorPages(options =>
     // Configure Razor Pages options
     options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
 });
+
+builder.Services.AddControllers(); // ← ADD THIS LINE
 
 // Add Clean Architecture layers
 builder.Services.AddApplicationServices();
@@ -48,6 +50,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers(); // ← ADD THIS LINE
 
 // Optional: Add some helpful startup information
 app.Logger.LogInformation("Guest Room Allocation application started");

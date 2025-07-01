@@ -17,21 +17,14 @@ namespace GuestRoomAllocation.Web.Pages.Rooms
             _context = context;
         }
 
+        public SelectList ApartmentOptions { get; set; } = new SelectList(new List<object>(), "Id", "Name");
+
         [BindProperty]
-        public CreateRoomCommand Command { get; set; } = default!;
+        public CreateRoomCommand Command { get; set; } = new();
 
-        public SelectList ApartmentOptions { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(int? apartmentId = null)
+        public async Task<IActionResult> OnGetAsync()
         {
             await LoadApartmentOptions();
-
-            Command = new CreateRoomCommand();
-            if (apartmentId.HasValue)
-            {
-                Command.ApartmentId = apartmentId.Value;
-            }
-
             return Page();
         }
 
@@ -45,38 +38,35 @@ namespace GuestRoomAllocation.Web.Pages.Rooms
 
             try
             {
-                // Check if apartment exists
                 var apartment = await _context.Apartments
                     .Include(a => a.Rooms)
                     .FirstOrDefaultAsync(a => a.Id == Command.ApartmentId);
 
                 if (apartment == null)
                 {
-                    ModelState.AddModelError("Command.ApartmentId", "Selected apartment does not exist.");
+                    ModelState.AddModelError("", "Selected apartment not found.");
                     await LoadApartmentOptions();
                     return Page();
                 }
 
-                // Check for duplicate room number in the same apartment
+                // Check if room number already exists in this apartment
                 if (apartment.Rooms.Any(r => r.RoomNumber == Command.RoomNumber))
                 {
-                    ModelState.AddModelError("Command.RoomNumber", $"Room {Command.RoomNumber} already exists in {apartment.Name}.");
+                    ModelState.AddModelError("Command.RoomNumber", "A room with this number already exists in the selected apartment.");
                     await LoadApartmentOptions();
                     return Page();
                 }
 
-                // Create the room using the apartment's AddRoom method
+                // Use the apartment's AddRoom method instead of direct Room constructor
                 var room = apartment.AddRoom(
                     Command.RoomNumber,
                     Command.Size,
                     Command.HasPrivateBathroom,
                     Command.MaxOccupancy,
-                    Command.Description
-                );
-
+                    Command.Description);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = $"Room {Command.RoomNumber} created successfully in {apartment.Name}!";
+                TempData["Success"] = $"Room {Command.RoomNumber} has been created successfully!";
                 return RedirectToPage("./Index");
             }
             catch (Exception ex)
@@ -110,9 +100,9 @@ namespace GuestRoomAllocation.Web.Pages.Rooms
         public string RoomNumber { get; set; } = string.Empty;
 
         [Required]
-        [Range(50, 2000)]
-        [Display(Name = "Size (sq ft)")]
-        public int Size { get; set; } = 100;
+        [Range(5, 200)]
+        [Display(Name = "Size (m²)")]
+        public int Size { get; set; } = 15;
 
         [Required]
         [Range(1, 6)]
